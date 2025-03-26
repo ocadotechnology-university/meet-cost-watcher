@@ -3,9 +3,11 @@ name: Linter
 on:
   pull_request:
     types: [opened, synchronize, reopened]
+
 jobs:
   Explore-GitHub-Actions:
     runs-on: ubuntu-latest
+
     steps:
       - name: Sync code
         uses: actions/checkout@v4
@@ -32,6 +34,6 @@ jobs:
           npm ci
 
       - name: Run frontend Linter
-      - run: |
+        run: |
           cd frontend
           npx eslint . --ext .js,.jsx,.ts,.tsx
