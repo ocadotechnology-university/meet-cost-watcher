@@ -18,5 +18,18 @@ jobs:
       - name: Install Black
         run: pip install black
 
-      - name: Run Linter
+      - name: Run backend Linter
         run: black --check ./backend
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 18
+
+      - name: Install node dependencies
+        run: |
+          cd frontend
+          npm ci
+
+      - name: Run frontend Linter
+      - run: npx eslint . --ext .js,.jsx,.ts,.tsx
