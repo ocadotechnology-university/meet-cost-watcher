@@ -1,0 +1,39 @@
+name: Linter
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+
+jobs:
+  Explore-GitHub-Actions:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Sync code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: "3.10"
+
+      - name: Install Black
+        run: pip install black
+
+      - name: Run backend Linter
+        run: black --check ./backend
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 18
+
+      - name: Install node dependencies
+        run: |
+          cd frontend
+          npm ci
+
+      - name: Run frontend Linter
+        run: |
+          cd frontend
+          npx eslint . --ext .js,.jsx,.ts,.tsx --max-warnings=0
