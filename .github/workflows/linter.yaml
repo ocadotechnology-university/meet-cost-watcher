@@ -32,4 +32,6 @@ jobs:
           npm ci
 
       - name: Run frontend Linter
-      - run: npx eslint . --ext .js,.jsx,.ts,.tsx
+      - run: |
+          cd frontend
+          npx eslint . --ext .js,.jsx,.ts,.tsx
