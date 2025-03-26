@@ -36,4 +36,4 @@ jobs:
       - name: Run frontend Linter
         run: |
           cd frontend
-          npx eslint . --ext .js,.jsx,.ts,.tsx
+          npx eslint . --ext .js,.jsx,.ts,.tsx --max-warnings=0
