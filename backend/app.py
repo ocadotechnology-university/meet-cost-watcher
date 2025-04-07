@@ -2,18 +2,29 @@ from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
 import os
 from dotenv import load_dotenv
-from models import db
+from flask_httpauth import HTTPBasicAuth
+from models import db, User
+
 load_dotenv()
 
 app = Flask(__name__)
 app.config['SQLALCHEMY_DATABASE_URI'] = f'mysql+pymysql://{os.getenv("DB_USER", "")}:{os.getenv("DB_PASSWORD", "")}@{os.getenv("DB_HOST", "")}/{os.getenv("DB_NAME", "")}'
 db.init_app(app)
 
+auth = HTTPBasicAuth()
 
-@app.route('/login', methods=['GET', 'POST'])
+
+@auth.verify_password
+def verify_password(username, password):
+    user = User.query.filter_by(username=username).first()
+    if not user or not user.verify_password(password):
+        return False
+    return True
+
+
+@app.route('/test', methods=['GET', 'POST'])
+@auth.login_required
 def index() -> str:
-
-    
     return "Hello World"
 
 
