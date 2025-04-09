@@ -1,29 +1,30 @@
-# Flow API
+# How to run BE
 
-## Q&A
+1. If you don't have it, install mysql on your computer, XAMPP is the best
 
-### Jakich potrzebujemy kluczy do połączenia się?
+2. `cd` your way to `backend` folder
 
-Prawdopodobnie ID klienta i Client_Secret [https://developers.google.com/meet/api/guides/tutorial-events-python?hl=pl&utm_source=chatgpt.com#set-up-auth-desktop-client]
+3. Create `.env` file near the `.env.example` and populate it with your connection details. Make sure to create database manually
 
-Inną możliwością jest użycie tego [https://cloud.google.com/docs/authentication/api-keys?visit_id=638785173387956679-3476802915&rd=1]
+4. Create virtual env for Python
 
-### Jaką metodą jest autoryzacja (Oauth2, BasicAuth czy coś innego)
+- (MacOS or Linux) `python3 -m venv .venv`
+- (Windows) `python -m venv .venv`
 
-OAuth 2.0 [https://developers.google.com/meet/api/guides/authenticate-authorize?hl=pl#:~:text=Interfejs%20Meet%20REST%20obs%C5%82uguje%20te%20zakresy%20OAuth%C2%A02.0%3A]
+5. Activate it
 
-Logowanie przez Google I uwietrzylnianie przez to ?
+- (MacOS or Linux) `source .venv/bin/activate`
+- (Windows) `.venv\Scripts\activate`
 
-### W jakiej formie zczytujemy dane o spotkaniu, aktywnie czy pasywnie z webhooka?
+6. Install dependencies
 
-Poprzez żądania HTTPS (czyli aktywnie) [https://developers.google.com/meet/api/guides/tutorial-events-python?hl=pl&utm_source=chatgpt.com#:~:text=response%20%3D%20session.post(%22https%3A//workspaceevents.googleapis.com/v1/subscriptions%22%2C%20json%3Dbody)]
+- (MacOS or Linux) `pip3 install -r requirements.txt`
+- (Windows) `pip install -r requirements.txt`
 
-### Jak pobrać listę osób + pokój z konkretnego spotkania
+7. Populate some dummy data for tests
 
-TODO: Wciąż szukane, prawdpodobnie trzeba będzie ciągle nasłuchiwać i zapisywać odpowiedzi. Demo prostej apki na kompie
+- `python ./bin/populate.py`
 
-## Linki
-- https://developers.google.com/meet/api/guides/quickstart/python?hl=pl
-- https://developers.google.com/meet/api/guides/tutorial-events-python?hl=pl
-- https://docs.google.com/document/d/1wOffkXVUK38-baNzRLZW85Mt11Q6YhdNS55hTigXh_w/edit?pli=1&hl=pl&tab=t.0#heading=h.7eebh571khfm
-- ***https://github.com/googleapis/google-api-python-client/blob/main/docs/api-keys.md (może sie przydać)
+8. Run the app
+
+- `flask --app app run --debug`
