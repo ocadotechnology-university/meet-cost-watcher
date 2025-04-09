@@ -10,24 +10,27 @@ class Meeting(db.Model):
     duration = db.Column(db.Integer, nullable=False)  # Duration in minutes
     room_name = db.Column(db.String(64))
     cost = db.Column(db.Float)
-    
+
     # Relationship with additional costs
-    additional_costs = db.relationship('AdditionalCost', backref='meeting', lazy='dynamic')
-    
+    additional_costs = db.relationship(
+        "AdditionalCost", backref="meeting", lazy="dynamic"
+    )
+
     def __repr__(self) -> str:
-        return f'<Meeting {self.title}>'
-    
+        return f"<Meeting {self.title}>"
+
     def to_dict(self):
         return {
             "id": self.id,
             "token": self.token,
             "title": self.title,
-            "date": self.start_datetime.isoformat()
+            "date": self.start_datetime.isoformat(),
         }
 
 
 # Association table for many-to-many relationship between Meeting and User
-meeting_users = db.Table('meeting_users',
-    db.Column('meeting_id', db.Integer, db.ForeignKey('meeting.id'), primary_key=True),
-    db.Column('user_id', db.Integer, db.ForeignKey('user.id'), primary_key=True)
+meeting_users = db.Table(
+    "meeting_users",
+    db.Column("meeting_id", db.Integer, db.ForeignKey("meeting.id"), primary_key=True),
+    db.Column("user_id", db.Integer, db.ForeignKey("user.id"), primary_key=True),
 )

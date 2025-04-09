@@ -9,8 +9,12 @@ class User(db.Model):
     password_hash = db.Column(db.String(128))
     role_name = db.Column(db.String(64))
     hourly_cost = db.Column(db.Float)
-    
-    meetings = db.relationship('Meeting', secondary='meeting_users', backref=db.backref('users', lazy='dynamic'))
+
+    meetings = db.relationship(
+        "Meeting",
+        secondary="meeting_users",
+        backref=db.backref("users", lazy="dynamic"),
+    )
 
     def hash_password(self, password: str) -> None:
         self.password_hash = pwd_context.encrypt(password)
@@ -19,4 +23,4 @@ class User(db.Model):
         return pwd_context.verify(password, self.password_hash)
 
     def __repr__(self) -> str:
-        return f'<User {self.username}>'
+        return f"<User {self.username}>"

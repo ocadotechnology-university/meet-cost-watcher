@@ -9,7 +9,9 @@ from flask.json import jsonify
 load_dotenv()
 
 app = Flask(__name__)
-app.config['SQLALCHEMY_DATABASE_URI'] = f'mysql+pymysql://{os.getenv("DB_USER", "")}:{os.getenv("DB_PASSWORD", "")}@{os.getenv("DB_HOST", "")}/{os.getenv("DB_NAME", "")}'
+app.config["SQLALCHEMY_DATABASE_URI"] = (
+    f'mysql+pymysql://{os.getenv("DB_USER", "")}:{os.getenv("DB_PASSWORD", "")}@{os.getenv("DB_HOST", "")}/{os.getenv("DB_NAME", "")}'
+)
 db.init_app(app)
 
 auth = HTTPBasicAuth()
@@ -23,13 +25,13 @@ def verify_password(username, password):
     return True
 
 
-@app.route('/test', methods=['GET', 'POST'])
+@app.route("/test", methods=["GET", "POST"])
 @auth.login_required
 def index() -> str:
     return "Hello World"
 
 
-@app.route('/meet/<token>', methods=['GET'])
+@app.route("/meet/<token>", methods=["GET"])
 @auth.login_required
 def meet_single(token: str) -> str:
     return jsonify(Meeting.query.filter_by(token=token).first_or_404().to_dict())
