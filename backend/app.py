@@ -3,7 +3,8 @@ from flask_sqlalchemy import SQLAlchemy
 import os
 from dotenv import load_dotenv
 from flask_httpauth import HTTPBasicAuth
-from models import db, User
+from models import db, User, Meeting
+from flask.json import jsonify
 
 load_dotenv()
 
@@ -26,6 +27,12 @@ def verify_password(username, password):
 @auth.login_required
 def index() -> str:
     return "Hello World"
+
+
+@app.route('/meet/<token>', methods=['GET'])
+@auth.login_required
+def meet_single(token: str) -> str:
+    return jsonify(Meeting.query.filter_by(token=token).first_or_404().to_dict())
 
 
 if __name__ == "__main__":
