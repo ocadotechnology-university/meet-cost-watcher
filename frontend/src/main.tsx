@@ -2,7 +2,6 @@ import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
 import { BrowserRouter as Router, Route, Routes } from "react-router-dom";
 import './index.css'
-import App from './App.tsx'
 import LoginPage from './login.tsx'
 import SingleTokenPage from './login_single_token.tsx'
 
