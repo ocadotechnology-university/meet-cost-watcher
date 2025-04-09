@@ -3,10 +3,11 @@ import { useNavigate } from "react-router-dom";
 import logo from './assets/logo.png'
 import login_background from './assets/login_background.jpg'
 
-const SingleTokenPage: React.FC = () => {
+const TokenLoginPage: React.FC = () => {
   const [loginError, setLoginError] = useState(false);
   const navigate = useNavigate();
 
+  // TODO: implement login logic
   const handleLogin = () => {
     const isValidLogin = false;
     if (!isValidLogin) {
@@ -38,6 +39,7 @@ const SingleTokenPage: React.FC = () => {
           type="text"
           placeholder="token spotkania"
           className="w-full mb-4 px-4 py-2 bg-transparent border-b-2 border-blue-main text-blue-main placeholder-blue-main focus:outline-none"
+          required
         />
 
         {/* Login button */}
@@ -61,4 +63,4 @@ const SingleTokenPage: React.FC = () => {
   );
 };
 
-export default SingleTokenPage;
+export default TokenLoginPage;

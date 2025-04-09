@@ -13,6 +13,7 @@ const LoginPage: React.FC = () => {
     setPasswordVisible(!passwordVisible);
   };
 
+  // TODO: implement login logic
   const handleLogin = () => {
     const isValidLogin = false;
     if (!isValidLogin) {
@@ -21,7 +22,7 @@ const LoginPage: React.FC = () => {
   };
 
   const handleRedirect = () => {
-    navigate("/single_token"); 
+    navigate("/token_login"); 
   };
 
   return (
@@ -44,12 +45,14 @@ const LoginPage: React.FC = () => {
           type="text"
           placeholder="login"
           className="w-full mb-4 px-4 py-2 bg-transparent border-b-2 border-blue-main text-blue-main placeholder-blue-main focus:outline-none"
+          required
         />
         <div className="relative w-full mb-6">
           <input
             type={passwordVisible ? "text" : "password"}
             placeholder="password"
             className="w-full px-4 py-2 bg-transparent border-b-2 border-blue-main text-blue-main placeholder-blue-main focus:outline-none"
+            required
           />
           <button
             type="button"
