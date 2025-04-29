@@ -47,7 +47,7 @@ if __name__ == "__main__":
             duration = random.randint(30, 180)
 
             rand_meeting = Meeting(
-                title=fake.sentence(nb_words=3),
+                name=fake.sentence(nb_words=3),
                 start_datetime=start_time,
                 duration=duration,
                 room_name=random.choice(room_names),
