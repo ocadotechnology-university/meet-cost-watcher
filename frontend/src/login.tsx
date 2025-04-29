@@ -3,12 +3,13 @@ import { useNavigate } from "react-router-dom";
 import logo from './assets/logo.png'
 import login_background from './assets/login_background.jpg'
 import eye from './assets/eye.png'
+import { useContext } from "react";
+import { LoginContext } from "./context/LoginContext";
 
 const LoginPage: React.FC = () => {
   const [passwordVisible, setPasswordVisible] = useState(false);
   const [loginError, setLoginError] = useState(false);
-  const [login, setLogin] = useState("");
-  const [password, setPassword] = useState("");
+  const { login, setLogin, password, setPassword } = useContext(LoginContext);
   const navigate = useNavigate();
   const backendURL = "http://127.0.0.1:5000";
 
