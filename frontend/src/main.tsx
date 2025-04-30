@@ -1,7 +1,6 @@
 import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
 import { BrowserRouter as Router, Route, Routes } from "react-router-dom";
-import "./index.css";
 import LoginPage from "./login.tsx";
 import TokenLoginPage from "./token_login.tsx";
 import MultipleMeetingsPage from "./multiple_meetings.tsx";

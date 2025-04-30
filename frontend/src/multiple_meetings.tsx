@@ -7,6 +7,7 @@ import logo from './assets/logo.png'
 import arrowLeft from './assets/arrowLeft.png'
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faLink, faCalendarDays, faClock, faLocationDot, faEllipsisV, faPlusCircle } from "@fortawesome/free-solid-svg-icons";
+import "./style.css";
 
 const meetings = new Array(7).fill({
   code: "abc-mnop-xyz",
@@ -85,9 +86,9 @@ export default function MultipleMeetingsPage(){
       </div>
       <hr className="border-gray-300" />
       {!filterVisibility && (
-        <div className="w-[3.3em] h-fit float-left pt-4">
+        <div className="w-fit h-fit float-left p-0 pt-4">
           <button
-        className="p-1 h-fit bg-blue-main rounded-[0.5em] items-center flex flex-row cursor-pointer"
+        className="p-1 w-fit h-fit bg-blue-main rounded-[0.5em] items-center flex flex-row cursor-pointer"
         onClick={() => setFilterVisibility(true)}
           >
         <img src={arrowLeft} alt="arrowLeft" className="h-[1.3em] inline-block pr-1" />

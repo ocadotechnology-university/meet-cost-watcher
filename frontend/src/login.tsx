@@ -5,6 +5,7 @@ import login_background from './assets/login_background.jpg'
 import eye from './assets/eye.png'
 import { useContext } from "react";
 import { LoginContext } from "./context/LoginContext";
+import "./style2.css";
 
 const LoginPage: React.FC = () => {
   const [passwordVisible, setPasswordVisible] = useState(false);
