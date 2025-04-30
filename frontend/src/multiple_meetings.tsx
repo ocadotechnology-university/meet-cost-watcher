@@ -186,7 +186,7 @@ export default function MultipleMeetingsPage(){
                   <span className="text-custom-teal">50 zł/h</span>
                 </li>
                 <hr className="gray-line mx-2" />
-                {Array(6).fill("Jan Kowalski - Programista Java").map((text, idx) => (
+                {Array(6).fill("Jan Kowalski").map((text, idx) => (
                   <li key={idx} className="flex flex-row justify-between ">
                   <div className="flex flex-row items-left gap-2">
                     <div className="h-[3em] aspect-square border-2 border-black rounded-full row-span-2"></div>
