@@ -6,8 +6,10 @@ import magnifier from './assets/magnifier.png'
 import logo from './assets/logo.png'
 import arrowLeft from './assets/arrowLeft.png'
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faLink, faCalendarDays, faClock, faLocationDot, faEllipsisV, faPlusCircle } from "@fortawesome/free-solid-svg-icons";
+import { faLink, faCalendarDays, faClock, faLocationDot, faEllipsisV, faPlusCircle, faPlus, faAngleDown } from "@fortawesome/free-solid-svg-icons";
 import "./style.css";
+import Slider from "rc-slider";
+import "rc-slider/assets/index.css";
 
 const meetings = new Array(7).fill({
   code: "abc-mnop-xyz",
@@ -21,15 +23,19 @@ meetings[0] = {
   title: "Meet Cost Watcher - Spotkanie PWR",
   cost: "950zł",
 };
-
 export default function MultipleMeetingsPage(){
   const [filterVisibility, setFilterVisibility] = useState(false);
+  const [durationRange, setDurationRange] = useState<[number, number]>([0, 300]);
+  const [costRange, setCostRange] = useState<[number, number]>([0, 5000]);
 
   return (
     <div className="bg-[#f6f6f6] min-h-screen min-w-screen text-gray-900 overflow-hidden">
       {filterVisibility && (
-        <div className="w-[260px] min-h-screen bg-white float-left pt-4 rounded-r-2xl shadow p-4 border border-gray-200 flex flex-col gap-3" onBlur={()=>setFilterVisibility(false)}>
-          <h2 className="text-center font-bold text-[0.9em] text-blue-900">WYSZUKAJ SPOTKANIA</h2>
+        <div 
+          className="w-1/6 min-h-screen bg-white float-left pt-4 rounded-r-2xl shadow p-4 border border-gray-200 flex flex-col gap-3"
+          onMouseLeave={() => setFilterVisibility(false)}
+        >
+          <h2 className="text-center font-bold text-[1.5em] text-blue-900">WYSZUKAJ SPOTKANIA</h2>
           
           <input 
             type="text" 
@@ -38,25 +44,49 @@ export default function MultipleMeetingsPage(){
           />
         
           <div className="flex gap-2">
+            <label>od:</label>
             <input type="date" className="w-1/2 text-xs border border-gray-300 rounded-lg p-1" />
             <input type="time" className="w-1/2 text-xs border border-gray-300 rounded-lg p-1" />
           </div>
           <div className="flex gap-2">
+            <label>od:</label>
             <input type="date" className="w-1/2 text-xs border border-gray-300 rounded-lg p-1" />
             <input type="time" className="w-1/2 text-xs border border-gray-300 rounded-lg p-1" />
           </div>
         
-          <label className="text-sm text-gray-700">Czas trwania</label>
-          <input type="range" min="0" max="300" className="w-full" />
-          
-          <label className="text-sm text-gray-700">Koszt spotkania</label>
-          <input type="range" min="0" max="5000" className="w-full" />
+          {/* Suwak dla czasu trwania */}
+          <div>
+            <label className="text-sm text-gray-700">Czas trwania 
+              <span className="float-end">{` ${durationRange[0]}-${durationRange[1]} min`}</span>
+            </label>
+            <Slider
+              range
+              min={0}
+              max={300}
+              value={durationRange}
+              onChange={(value: number[]) => setDurationRange(value as [number, number])}
+            />
+          </div>
+
+          {/* Suwak dla kosztu spotkania */}
+          <div>
+            <label className="text-sm text-gray-700">Koszt spotkania
+              <span className="float-end">{`${costRange[0]}-${costRange[1]} zł`}</span>
+            </label>
+            <Slider
+              range
+              min={0}
+              max={5000}
+              value={costRange}
+              onChange={(value: number[]) => setCostRange(value as [number, number])}
+            />
+          </div>
         
           <label className="text-sm text-gray-700">Osoby</label>
-          <div className="flex flex-wrap gap-1">
-            <span className="bg-purple-400 text-white rounded-full px-2 text-sm">Osoba 1 ×</span>
-            <span className="bg-purple-400 text-white rounded-full px-2 text-sm">Osoba 2 ×</span>
-            <button className="w-[20px] h-[20px] rounded-full bg-blue-700 text-white flex items-center justify-center text-sm">+</button>
+          <div className="">
+            <span className="bg-purple-400 text-white self-center rounded px-2 py-1 mr-2 text-sm">Osoba 1 ×</span>
+            <span className="bg-purple-400 text-white self-center rounded px-2 py-1 mr-2 text-sm">Osoba 2 ×</span>
+            <button className="float-end w-[2em] h-[2em] rounded-full bg-blue-700 text-white flex items-center justify-center text-sm"><FontAwesomeIcon icon={faPlus}/></button>
         </div>
       
         <label className="text-sm text-gray-700 mt-2">Sortowanie</label>
@@ -69,9 +99,16 @@ export default function MultipleMeetingsPage(){
       
         <button className="mt-2 bg-blue-800 text-white rounded-md p-2 text-sm">Szukaj</button>
       
-        <div className="absolute bottom-2 left-4 flex items-center gap-2 text-sm text-gray-600">
-          <div className="bg-gray-300 text-white w-8 h-8 rounded-full flex items-center justify-center font-bold">JN</div>
-          <span>Janusz Nowak</span>
+        <div className="absolute p-0 m-0 left-0 bottom-6 w-1/6">
+          <hr className="gray-line" />
+          <div className=" align-middle gap-2 text-sm text-gray-600 w-full pl-5 pt-3">
+            <div className="bg-gray-900 text-white w-10 h-10 rounded-full float-left flex items-center justify-center text-2xl">JN</div>
+              <span className="float-left ml-2">
+                <p className=" font-bold">Janusz Nowak</p>
+                <p className="text-gray-500 text-xs">Zalogowano</p>
+              </span>
+              <FontAwesomeIcon icon={faAngleDown} className="float-right mr-5 mt-3"/>
+            </div>
         </div>
       </div>
       
@@ -180,7 +217,7 @@ export default function MultipleMeetingsPage(){
               <ul className="space-y-1">
                 <li className="flex flex-row justify-between ">
                   <div className="flex flex-row items-left gap-2">
-                    <div className="h-[3em] aspect-square border-2 border-black rounded-full row-span-2"></div>
+                  <div className="bg-gray-900 text-white h-[2em] aspect-square rounded-full float-left flex items-center justify-center text-2xl">K</div>
                     <span><b>Janina Kowalska</b><p className="text-sm text-gray-500">Senior Dev</p></span>
                   </div>
                   <span className="text-custom-teal">50 zł/h</span>
@@ -189,7 +226,7 @@ export default function MultipleMeetingsPage(){
                 {Array(6).fill("Jan Kowalski").map((text, idx) => (
                   <li key={idx} className="flex flex-row justify-between ">
                   <div className="flex flex-row items-left gap-2">
-                    <div className="h-[3em] aspect-square border-2 border-black rounded-full row-span-2"></div>
+                  <div className="bg-gray-900 text-white h-[2em] aspect-square rounded-full float-left flex items-center justify-center text-2xl">JK</div>
                     <span><b>{text}</b><p className="text-sm text-gray-500">Programista Java</p></span>
                   </div>
                   <span className="text-custom-teal">50 zł/h</span>
