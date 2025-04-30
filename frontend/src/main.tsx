@@ -4,7 +4,7 @@ import { BrowserRouter as Router, Route, Routes } from "react-router-dom";
 import LoginPage from "./login.tsx";
 import TokenLoginPage from "./token_login.tsx";
 import MultipleMeetingsPage from "./multiple_meetings.tsx";
-import { LoginProvider } from "./context/LoginContext";
+import { LoginProvider } from "./context/LoginProvider.tsx";
 
 createRoot(document.getElementById("root")!).render(
   <StrictMode>

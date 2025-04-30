@@ -1,4 +1,4 @@
-import React, { createContext, useState } from "react";
+import React, { createContext} from "react";
 
 interface LoginContextProps {
   login: string;
@@ -13,14 +13,3 @@ export const LoginContext = createContext<LoginContextProps>({
   password: "",
   setPassword: () => {},
 });
-
-export const LoginProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const [login, setLogin] = useState("");
-  const [password, setPassword] = useState("");
-
-  return (
-    <LoginContext.Provider value={{ login, setLogin, password, setPassword }}>
-      {children}
-    </LoginContext.Provider>
-  );
-};
