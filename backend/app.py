@@ -25,7 +25,7 @@ def verify_password(username, password):
     return True
 
 
-@app.route("/test", methods=["GET","POST"])
+@app.route("/test", methods=["GET", "POST"])
 @auth.login_required
 def index():
     return jsonify({"message": "Login successful"}), 200
