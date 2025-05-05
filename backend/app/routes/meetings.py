@@ -1,19 +1,16 @@
 from flask_restx import Namespace, Resource, fields
-from flask_httpauth import HTTPBasicAuth
-from app.models import User
 from app.resolvers.meetings import meetings_all_resolver, meetings_single_resolver
 from flask.json import jsonify
 from flask import request
 from app.types import MeetingsFilters as MeetingsFilterParser
+from flask import abort
+from app.auth import auth
 
 api = Namespace("meetings", description="meeting operations")
-auth = HTTPBasicAuth()
-from flask import abort
+
 
 # docs types
 # --------------------------------------------------------------------------------------------
-error_model = api.model("Error", {"error": fields.String(description="Error message")})
-
 meetings_sorting_model = api.model(
     "MeetingsSorting",
     {
@@ -101,21 +98,13 @@ meetings_all_output = api.model(
 # --------------------------------------------------------------------------------------------
 
 
-@auth.verify_password
-def verify_password(username, password):
-    user = User.query.filter_by(username=username).first()
-    if not user or not user.verify_password(password):
-        return False
-    return user
-
-
 @api.route("/all")
 class MeetingsAll(Resource):
 
     @api.doc(security="basicAuth")
     @api.expect(meetings_filters_model)
     @api.response(200, "Success", meetings_all_output)
-    @api.response(400, "Invalid filters", error_model)
+    @api.response(400, "Invalid filters")
     @api.response(401, "Unauthorized")
     @auth.login_required
     def post(self):
@@ -129,7 +118,7 @@ class MeetingsAll(Resource):
             try:
                 filters = MeetingsFilterParser(**data)
             except Exception:
-                return jsonify({"error": "provided filter data in wrong format"}), 400
+                abort(400)
 
         return jsonify(meetings_all_resolver(filters=filters))
 
@@ -139,7 +128,7 @@ class MeetingsSingle(Resource):
 
     @api.doc(security="basicAuth")
     @api.response(200, "Success", meeting_model)
-    @api.response(400, "Invalid request", error_model)
+    @api.response(400, "Invalid request")
     @api.response(404, "Meeting not found")
     def post(self, token):
         """Get a single meeting by token"""

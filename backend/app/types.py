@@ -37,3 +37,17 @@ class MeetingsFilters:
     def __post_init__(self):
         if isinstance(self.sort_by, dict):
             self.sort_by = MeetingsSorting(**self.sort_by)
+
+
+@dataclass
+class CreateAdditionalCostInput:
+    meeting_id: int
+    name: str
+    cost: float
+
+
+@dataclass
+class UpdateAdditionalCostInput:
+    id: int
+    name: str
+    cost: float
