@@ -3,11 +3,13 @@ from typing import Optional
 from datetime import datetime
 from enum import Enum
 
+
 class MeetingSortFields(Enum):
     NAME = "name"
     COST = "cost"
     DURATION = "duration"
     START = "start"
+
 
 class SortingOrder(Enum):
     ASC = "asc"
@@ -30,8 +32,8 @@ class MeetingsFilters:
     participant_ids: Optional[list[int]] = None
     start_min: Optional[datetime] = None
     start_max: Optional[datetime] = None
-    sort_by: Optional[MeetingsSorting] = None 
+    sort_by: Optional[MeetingsSorting] = None
 
     def __post_init__(self):
         if isinstance(self.sort_by, dict):
-            self.sort_by = MeetingsSorting(**self.sort_by) 
+            self.sort_by = MeetingsSorting(**self.sort_by)

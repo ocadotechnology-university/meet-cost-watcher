@@ -3,16 +3,17 @@ import os
 import uuid
 
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
-from models import db, User, Meeting, AdditionalCost
+from app.models import User, Meeting, AdditionalCost
+from app.extensions import db
 from faker import Faker
-from app import app
+from app import create_app
 import random
 from datetime import datetime, timedelta
 
 if __name__ == "__main__":
 
     fake = Faker()
-    with app.app_context():
+    with create_app().app_context():
 
         db.create_all()
 
