@@ -4,7 +4,7 @@ from datetime import datetime
 
 class Meeting(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    title = db.Column(db.String(128), nullable=False)
+    name = db.Column(db.String(128), nullable=False)
     token = db.Column(db.String(128), nullable=False, unique=True)
     start_datetime = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
     duration = db.Column(db.Integer, nullable=False)  # Duration in minutes
@@ -17,18 +17,17 @@ class Meeting(db.Model):
     )
 
     def __repr__(self) -> str:
-        return f"<Meeting {self.title}>"
+        return f"<Meeting {self.name}>"
 
     def to_dict(self):
         return {
             "id": self.id,
             "token": self.token,
-            "title": self.title,
+            "title": self.name,
             "date": self.start_datetime.isoformat(),
         }
 
 
-# Association table for many-to-many relationship between Meeting and User
 meeting_users = db.Table(
     "meeting_users",
     db.Column("meeting_id", db.Integer, db.ForeignKey("meeting.id"), primary_key=True),
