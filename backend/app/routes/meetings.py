@@ -145,6 +145,9 @@ class MeetingsAll(Resource):
             except Exception:
                 abort(400)
 
+        if filters is None:
+            filters = MeetingsFilterParser()
+
         return meetings_all_resolver(filters=filters, user=user)
 
 
