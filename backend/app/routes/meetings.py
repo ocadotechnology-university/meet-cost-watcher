@@ -4,7 +4,6 @@ from flask import request
 from app.types import MeetingsFilters as MeetingsFilterParser
 from flask import abort
 from app.auth import auth
-from .common import build_return_type
 
 api = Namespace("meetings", description="meeting operations")
 
@@ -149,6 +148,21 @@ class MeetingsAll(Resource):
             filters = MeetingsFilterParser()
 
         return meetings_all_resolver(filters=filters, user=user)
+    
+
+@api.route("/sync")
+class MeetingSync(Resource):
+    @api.doc(security="basicAuth")
+    @api.response(200, "Success")
+    @api.response(401, "Unauthorized")
+    @auth.login_required
+    def post(self):
+        """Sync meetings with Google Calendar"""
+        try:
+            save_meetings_from_calendar()
+            return {"message": "Meetings synced successfully"}, 200
+        except Exception as e:
+            return {"error": str(e)}, 500
 
 
 @api.route("/single/<string:token>")

@@ -22,7 +22,7 @@ const LoginPage: React.FC = () => {
     try {
       const credentials = btoa(`${login}:${password}`);
   
-      const response = await fetch(backendURL+"/meetings/all", {
+      const response = await fetch(backendURL+"/meetings/sync", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -33,6 +33,8 @@ const LoginPage: React.FC = () => {
 
       const json = await response.json();
       console.log(json);
+
+      
       
       if (response.status === 401) {
         setLoginError(true); 
