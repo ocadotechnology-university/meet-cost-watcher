@@ -5,6 +5,7 @@ import login_background from './assets/login_background.jpg'
 import eye from './assets/eye.png'
 import { useContext } from "react";
 import { LoginContext } from "./context/LoginContext";
+import {MeetingResponse} from "./types/responseTypes.ts";
 import "./style2.css";
 
 const LoginPage: React.FC = () => {
@@ -22,18 +23,22 @@ const LoginPage: React.FC = () => {
     try {
       const credentials = btoa(`${login}:${password}`);
   
-      const response = await fetch(backendURL+"/test", {
+      const response = await fetch(backendURL+"/meetings/all", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
           "Authorization": `Basic ${credentials}`, 
         },
+        body: JSON.stringify({})
       });
+
+      const data: MeetingResponse = await response.json();
+      console.log(data);
   
       if (response.status === 401) {
         setLoginError(true); 
       } else if (response.status === 200) {
-        navigate("/multiple_meetings"); 
+        navigate("/multiple_meetings", {state: data});
       }
     } catch (error) {
       console.error("Error during login:", error);

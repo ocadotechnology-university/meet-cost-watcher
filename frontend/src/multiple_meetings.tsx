@@ -1,4 +1,5 @@
 import React, {useState} from "react";
+import { useLocation } from "react-router-dom";
 import clock from './assets/clock.png'
 import people from './assets/people.png'
 import dolar from './assets/dolar.png'
@@ -10,6 +11,8 @@ import { faLink, faCalendarDays, faClock, faLocationDot, faEllipsisV, faPlusCirc
 import "./style.css";
 import Slider from "rc-slider";
 import "rc-slider/assets/index.css";
+import {MeetingResponse} from "./types/responseTypes.ts";
+
 
 const meetings = new Array(7).fill({
   code: "abc-mnop-xyz",
@@ -27,13 +30,20 @@ export default function MultipleMeetingsPage(){
   const [filterVisibility, setFilterVisibility] = useState(false);
   const [durationRange, setDurationRange] = useState<[number, number]>([0, 300]);
   const [costRange, setCostRange] = useState<[number, number]>([0, 5000]);
+  const [selectedMeeting, setSelectedMeeting] = useState<number>(0);
+  const location = useLocation();
+  const responseData = location.state as MeetingResponse;
+
+  const handleMeetingSelection = (id: number) => {
+    setSelectedMeeting(id === selectedMeeting ? 0 : id);
+  }
 
   return (
     <div className="bg-[#f6f6f6] min-h-screen min-w-screen text-gray-900 overflow-hidden">
       {filterVisibility && (
         <div 
           className="w-1/6 min-h-screen bg-white float-left pt-4 rounded-r-2xl shadow p-4 border border-gray-200 flex flex-col gap-3"
-          onMouseLeave={() => setFilterVisibility(false)}
+          // onMouseLeave={() => setFilterVisibility(false)}
         >
           <h2 className="text-center font-bold text-[1.5em] text-blue-900">WYSZUKAJ SPOTKANIA</h2>
           
@@ -114,7 +124,7 @@ export default function MultipleMeetingsPage(){
       
       )}
       <div className="text-center p-6">
-        <h1 className="text-6xl font-normal text-blue-main">5050 zł</h1>
+        <h1 className="text-6xl font-normal text-blue-main">{responseData.total_cost} zł</h1>
         <p className="text-lg">CAŁKOWITY KOSZT WYBRANYCH SPOTKAŃ</p>
         <div 
             style={{ backgroundImage: `url(${logo})` }}
@@ -133,6 +143,7 @@ export default function MultipleMeetingsPage(){
           </button>
         </div>
       )}
+      {/*TODO Make searching functional*/}
       <div className="grid grid-cols-4 gap-x-4 p-4 h-[80vh]">
         <div className="h-full flex flex-col">
           <input
@@ -143,16 +154,17 @@ export default function MultipleMeetingsPage(){
           <div className="white-shadow-bordered-div col-span-1 h-full">
             <div className="h-full overflow-y-auto pr-2">
               <ul>
-              <li className="text-[0.9em] font-bold text-blue-main mb-2">Znalezionych wyników: 7</li>
+              <li className="text-[0.9em] font-bold text-blue-main mb-2">Znalezionych wyników: {responseData.meetings.length}</li>
               <hr className="gray-line mx-2" />
-                {meetings.map((m, i) => (
+                {responseData.meetings.map((m, i) => (
             <React.Fragment key={i}>
               <li
-                className={`flex justify-between items-center px-2 py-2 rounded-2xl hover:bg-gray-200 cursor-pointer ${i === 0 ? "bg-blue-100" : ""}`}
+                className={`flex justify-between items-center px-2 py-2 rounded-2xl hover:bg-gray-200 cursor-pointer ${i === selectedMeeting ? "bg-blue-100" : ""}`}
+                onClick={() => handleMeetingSelection(i)}
               >
                 <div className="whitespace-nowrap overflow-hidden w-full">
                   <div className="font-medium max-h-min flex flex-row justify-between">
-                    <span className="mr-2">{m.code}</span>
+                    <span className="mr-2">{m.token}</span>
                     <span >{m.title}</span>
                   </div>
                   <div className="text-[1em] text-gray-600 flex justify-between">
@@ -173,23 +185,23 @@ export default function MultipleMeetingsPage(){
 
         <div className="col-span-3 grid grid-cols-3 auto-rows-min gap-y-4 gap-x-4 white-shadow-bordered-div h-full items-start ">
           <div className="col-span-3 h-fit" >
-            <p className="text-[1.2em] font-bold text-blue-main">Meet Cost Watcher - Spotkanie PWR</p>
+            <p className="text-[1.2em] font-bold text-blue-main">{responseData.meetings[selectedMeeting].title}</p>
             <hr className="gray-line h-0 mt-2" />
           </div>
           <div className="col-span-3 grid grid-cols-3 gap-x-4 text-center h-fit">
             <div className="white-shadow-bordered-div little-grid-box">
               <img src={dolar} alt="Dolar" className="icon-positioning" />
-              <p className="text-xl font-bold text-custom-teal">950 zł</p>
+              <p className="text-xl font-bold text-custom-teal">{responseData.meetings[selectedMeeting].cost.toFixed(2)}</p>
               <p className="text-lg">Koszt</p>
             </div>
             <div className="white-shadow-bordered-div little-grid-box">
               <img src={people} alt="Dolar" className="icon-positioning" />
-              <p className="text-xl font-bold">7</p>
+              <p className="text-xl font-bold">{responseData.meetings[selectedMeeting].participants.length}</p>
               <p className="text-lg">Uczestnicy</p>
             </div>
             <div className="white-shadow-bordered-div little-grid-box">
               <img src={clock} alt="Dolar" className="icon-positioning" />
-              <p className="text-xl font-bold">1h 30 min</p>
+              <p className="text-xl font-bold">{responseData.meetings[selectedMeeting].duration} min</p>
               <p className="text-lg">Czas</p>
             </div>
           </div>
@@ -198,13 +210,14 @@ export default function MultipleMeetingsPage(){
             <h2 className="text-lg font-semibold mb-2 text-blue-main">Szczegóły spotkania</h2>
             <hr className="gray-line my-3" />        
             <div className="flex flex-col gap-y-3 overflow-y-auto">
-            <p><FontAwesomeIcon icon={faLink} />&nbsp;&nbsp;<strong> Kod:</strong> <span className="inline float-end">abc-mnop-xyz</span></p>
+            <p><FontAwesomeIcon icon={faLink} />&nbsp;&nbsp;<strong> Kod:</strong> <span className="inline float-end">{responseData.meetings[selectedMeeting].token}</span></p>
             <hr className="gray-line" />
-            <p><FontAwesomeIcon icon={faCalendarDays} />&nbsp;&nbsp;<strong> Data:</strong> <span className="inline float-end">09.04.2025</span></p>
-            <p><FontAwesomeIcon icon={faClock} />&nbsp;&nbsp;<strong> Czas:</strong> <span className="inline float-end">12:00 - 13:15</span></p>
-            <p><FontAwesomeIcon icon={faLocationDot} />&nbsp;&nbsp;<strong> Miejsce:</strong> <span className="inline float-end">Sala 20.2A</span></p>
+            <p><FontAwesomeIcon icon={faCalendarDays} />&nbsp;&nbsp;<strong> Data:</strong> <span className="inline float-end">{responseData.meetings[selectedMeeting].date.slice(0,10)}</span></p>
+            <p><FontAwesomeIcon icon={faClock} />&nbsp;&nbsp;<strong> Godzina rozpoczęcia:</strong> <span className="inline float-end">{responseData.meetings[selectedMeeting].date.slice(12,16)}</span></p>
+            <p><FontAwesomeIcon icon={faLocationDot} />&nbsp;&nbsp;<strong> Miejsce:</strong> <span className="inline float-end">{responseData.meetings[selectedMeeting].room_name}</span></p>
             </div>
             <hr className="gray-line my-2" />
+            {/*TODO Add description to database*/}
             <p className="mt-2 text-sm text-gray-600">
               Spotkanie projektowe ze studentami w celu dopracowania UI do perfekcji
             </p>
@@ -223,13 +236,13 @@ export default function MultipleMeetingsPage(){
                   <span className="text-custom-teal">50 zł/h</span>
                 </li>
                 <hr className="gray-line mx-2" />
-                {Array(6).fill("Jan Kowalski").map((text, idx) => (
+                {responseData.meetings[selectedMeeting].participants.map((participant, idx) => (
                   <li key={idx} className="flex flex-row justify-between ">
                   <div className="flex flex-row items-left gap-2">
                   <div className="bg-gray-900 text-white h-[2em] aspect-square rounded-full float-left flex items-center justify-center text-2xl">JK</div>
-                    <span><b>{text}</b><p className="text-sm text-gray-500">Programista Java</p></span>
+                    <span><b>{participant.username}</b><p className="text-sm text-gray-500">{participant.role_name}</p></span>
                   </div>
-                  <span className="text-custom-teal">50 zł/h</span>
+                  <span className="text-custom-teal">{participant.hourly_cost.toFixed(2)} zł/h</span>
                 </li>
                 ))}
               </ul>
@@ -243,8 +256,9 @@ export default function MultipleMeetingsPage(){
             <hr className="gray-line mx-2" />
             <div className="overflow-y-auto">
               <ul className="space-y-3 pt-3">
-                <li className="flex justify-between">Katering <span className="text-custom-teal">300 zł<FontAwesomeIcon icon={faEllipsisV} className="text-black pl-4 cursor-pointer" onClick={()=>void 0}/></span></li>
-                <li className="flex justify-between">Sala <span className="text-custom-teal">100 zł<FontAwesomeIcon icon={faEllipsisV} className="text-black pl-4 cursor-pointer" onClick={()=>void 0}/></span></li>
+                {responseData.meetings[selectedMeeting].additional_costs.map((cost,id) => (
+                  <li key={id} className="flex justify-between">{cost.name} <span className="text-custom-teal">{cost.cost.toFixed(2)}<FontAwesomeIcon icon={faEllipsisV} className="text-black pl-4 cursor-pointer" onClick={()=>void 0}/></span></li>
+                  ))}
               </ul>
             </div>
           </div>
