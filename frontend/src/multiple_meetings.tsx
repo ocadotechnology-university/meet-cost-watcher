@@ -1,4 +1,4 @@
-import React, {useState} from "react";
+import React, {useEffect, useMemo, useState} from "react";
 import { useLocation } from "react-router-dom";
 import clock from './assets/clock.png'
 import people from './assets/people.png'
@@ -13,40 +13,89 @@ import Slider from "rc-slider";
 import "rc-slider/assets/index.css";
 import {MeetingResponse} from "./types/responseTypes.ts";
 
-
-const meetings = new Array(7).fill({
-  code: "abc-mnop-xyz",
-  title: "Nazwa spotkania",
-  date: "13 kwi 2025, 13:00",
-  duration: "120min",
-  cost: "500zł",
-});
-meetings[0] = {
-  ...meetings[0],
-  title: "Meet Cost Watcher - Spotkanie PWR",
-  cost: "950zł",
-};
 export default function MultipleMeetingsPage(){
   const [filterVisibility, setFilterVisibility] = useState(false);
   const [durationRange, setDurationRange] = useState<[number, number]>([0, 300]);
   const [costRange, setCostRange] = useState<[number, number]>([0, 5000]);
-  const [selectedMeeting, setSelectedMeeting] = useState<number>(0);
+  const [selectedMeetingId, setSelectedMeetingId] = useState<number|null>(null);
+  const [searchTerm, setSearchTerm] = useState('');
   const location = useLocation();
   const responseData = location.state as MeetingResponse;
 
+  {/* Function handling meeting selection on list - gets id of chosen meeting and sets state */}
   const handleMeetingSelection = (id: number) => {
-    setSelectedMeeting(id === selectedMeeting ? 0 : id);
+    setSelectedMeetingId(id === selectedMeetingId ? null : id);
   }
+
+  {/* Function that handles filtering by name or by token dynamically */}
+  const filteredMeetings = useMemo(() => {
+    return responseData.meetings.filter( meeting =>
+    meeting.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    meeting.token.toLowerCase().includes(searchTerm.toLowerCase())
+    );
+
+  }, [responseData.meetings,searchTerm]);
+
+  {/* Function that calculates sum of filtered meetings */}
+  const totalCost = useMemo(() => {
+    return filteredMeetings.reduce((sum, meeting) => sum + meeting.cost, 0);
+  }, [filteredMeetings]);
+
+  {/* Function that finds currently selected meeting - works with filtering */}
+  const selectedMeeting = useMemo(() => {
+    return filteredMeetings.find(m => m.id === selectedMeetingId) ||
+        filteredMeetings[0] || null;
+  }, [filteredMeetings, selectedMeetingId]);
+
+  {/* Sets first meeting on list by deafault */}
+  useEffect(() => {
+    if (filteredMeetings.length > 0 && !selectedMeetingId) {
+      setSelectedMeetingId(filteredMeetings[0].id);
+    }
+  }, [filteredMeetings]);
+
+
+  {/* Function for formating time duration of the meeting */}
+  const formatDuration = (minutes: number) => {
+    const hours = Math.floor(minutes / 60);
+    const mins = minutes % 60;
+    return `${hours > 0 ? `${hours}h ` : ''}${mins}min`;
+  };
+
+  {/* Function for formating date of the meeting */}
+  const formatDate = (dateString: string) => {
+    const options: Intl.DateTimeFormatOptions = {
+      day: '2-digit',
+      month: '2-digit',
+      year: 'numeric'
+    };
+    return new Date(dateString).toLocaleString('pl-PL', options);
+  };
+  {/* Function for formating time of the meeting */}
+  const formatTime = (date: Date) => {
+    return date.toLocaleTimeString('pl-PL', {
+      hour: '2-digit',
+      minute: '2-digit',
+      hour12: false
+    });
+  };
+  {/* Function for calculating start and end time of the meeting */}
+  const getTimeRange = (startDate: string, durationMinutes: number) => {
+    const start = new Date(startDate);
+    const end = new Date(start.getTime() + durationMinutes * 60000);
+    return `${formatTime(start)} - ${formatTime(end)}`;
+  };
 
   return (
     <div className="bg-[#f6f6f6] min-h-screen min-w-screen text-gray-900 overflow-hidden">
       {filterVisibility && (
         <div 
           className="w-1/6 min-h-screen bg-white float-left pt-4 rounded-r-2xl shadow p-4 border border-gray-200 flex flex-col gap-3"
+          onDoubleClick={() => setFilterVisibility(false)}
           // onMouseLeave={() => setFilterVisibility(false)}
         >
           <h2 className="text-center font-bold text-[1.5em] text-blue-900">WYSZUKAJ SPOTKANIA</h2>
-          
+
           <input 
             type="text" 
             placeholder="Wpisz kod lub nazwę spotkania" 
@@ -123,8 +172,10 @@ export default function MultipleMeetingsPage(){
       </div>
       
       )}
+
+      {/* Central part of the page */}
       <div className="text-center p-6">
-        <h1 className="text-6xl font-normal text-blue-main">{responseData.total_cost} zł</h1>
+        <h1 className="text-6xl font-normal text-blue-main">{totalCost.toFixed(2)} zł</h1>
         <p className="text-lg">CAŁKOWITY KOSZT WYBRANYCH SPOTKAŃ</p>
         <div 
             style={{ backgroundImage: `url(${logo})` }}
@@ -143,24 +194,31 @@ export default function MultipleMeetingsPage(){
           </button>
         </div>
       )}
-      {/*TODO Make searching functional*/}
-      <div className="grid grid-cols-4 gap-x-4 p-4 h-[80vh]">
+
+      {/*List of meetings*/}
+      <div className="grid grid-cols-4 gap-x-4 p-4 h-[80vh] max-h-[80vh]">
         <div className="h-full flex flex-col">
+
+          {/*Filter Input*/}
           <input
             type="text"
             placeholder="Wpisz kod lub nazwę spotkania"
             className="mb-4 w-full bg-white rounded-xl shadow border-1 border-gray-200 text-[1em] text-center p-2 focus:outline-none focus:ring-2 focus:ring-blue-500 h-fit"
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
           />
           <div className="white-shadow-bordered-div col-span-1 h-full">
-            <div className="h-full overflow-y-auto pr-2">
+            <div className="h-full max-h-[80vh] overflow-y-auto pr-2">
               <ul>
-              <li className="text-[0.9em] font-bold text-blue-main mb-2">Znalezionych wyników: {responseData.meetings.length}</li>
+              <li className="text-[0.9em] font-bold text-blue-main mb-2">Znalezionych wyników: {filteredMeetings.length}</li>
               <hr className="gray-line mx-2" />
-                {responseData.meetings.map((m, i) => (
-            <React.Fragment key={i}>
+
+                {/* List Section */}
+                {filteredMeetings.map((m) => (
+            <React.Fragment key={m.id}>
               <li
-                className={`flex justify-between items-center px-2 py-2 rounded-2xl hover:bg-gray-200 cursor-pointer ${i === selectedMeeting ? "bg-blue-100" : ""}`}
-                onClick={() => handleMeetingSelection(i)}
+                className={`flex justify-between items-center px-2 py-2 rounded-2xl hover:bg-gray-200 cursor-pointer ${m.id === selectedMeetingId ? "bg-blue-100" : ""}`}
+                onClick={() => handleMeetingSelection(m.id)}
               >
                 <div className="whitespace-nowrap overflow-hidden w-full">
                   <div className="font-medium max-h-min flex flex-row justify-between">
@@ -168,9 +226,9 @@ export default function MultipleMeetingsPage(){
                     <span >{m.title}</span>
                   </div>
                   <div className="text-[1em] text-gray-600 flex justify-between">
-                    <span>{m.date}</span>
-                    <span> {m.duration}</span>
-                    <span className="text-custom-teal font-semibold">{m.cost}</span>
+                    <span>{formatDate(m.date)}, {formatTime(new Date(m.date))}</span>
+                    <span> {formatDuration(m.duration)}</span>
+                    <span className="text-custom-teal font-semibold">{m.cost.toFixed(2)} zł</span>
                   </div>
                   
                 </div>
@@ -183,46 +241,55 @@ export default function MultipleMeetingsPage(){
           </div>
         </div>
 
+        {/* Details of selected meeting */}
+        {selectedMeeting && (
         <div className="col-span-3 grid grid-cols-3 auto-rows-min gap-y-4 gap-x-4 white-shadow-bordered-div h-full items-start ">
           <div className="col-span-3 h-fit" >
-            <p className="text-[1.2em] font-bold text-blue-main">{responseData.meetings[selectedMeeting].title}</p>
+            <p className="text-[1.2em] font-bold text-blue-main">{selectedMeeting.title}</p>
             <hr className="gray-line h-0 mt-2" />
           </div>
+
+          {/* Upper Section */}
           <div className="col-span-3 grid grid-cols-3 gap-x-4 text-center h-fit">
             <div className="white-shadow-bordered-div little-grid-box">
               <img src={dolar} alt="Dolar" className="icon-positioning" />
-              <p className="text-xl font-bold text-custom-teal">{responseData.meetings[selectedMeeting].cost.toFixed(2)}</p>
+              <p className="text-xl font-bold text-custom-teal">{selectedMeeting.cost.toFixed(2)} zł</p>
               <p className="text-lg">Koszt</p>
             </div>
             <div className="white-shadow-bordered-div little-grid-box">
               <img src={people} alt="Dolar" className="icon-positioning" />
-              <p className="text-xl font-bold">{responseData.meetings[selectedMeeting].participants.length}</p>
+              <p className="text-xl font-bold">{selectedMeeting.participants.length}</p>
               <p className="text-lg">Uczestnicy</p>
             </div>
             <div className="white-shadow-bordered-div little-grid-box">
               <img src={clock} alt="Dolar" className="icon-positioning" />
-              <p className="text-xl font-bold">{responseData.meetings[selectedMeeting].duration} min</p>
+              <p className="text-xl font-bold">{selectedMeeting.duration} min</p>
               <p className="text-lg">Czas</p>
             </div>
           </div>
+
+          {/* Details Section */}
           <hr className="gray-line mx-2 h-0 col-span-3 flex flex-col" />
           <div className="white-shadow-bordered-div h-[52vh]">
             <h2 className="text-lg font-semibold mb-2 text-blue-main">Szczegóły spotkania</h2>
             <hr className="gray-line my-3" />        
             <div className="flex flex-col gap-y-3 overflow-y-auto">
-            <p><FontAwesomeIcon icon={faLink} />&nbsp;&nbsp;<strong> Kod:</strong> <span className="inline float-end">{responseData.meetings[selectedMeeting].token}</span></p>
+            <p><FontAwesomeIcon icon={faLink} />&nbsp;&nbsp;<strong> Kod:</strong> <span className="inline float-end">{selectedMeeting.token}</span></p>
             <hr className="gray-line" />
-            <p><FontAwesomeIcon icon={faCalendarDays} />&nbsp;&nbsp;<strong> Data:</strong> <span className="inline float-end">{responseData.meetings[selectedMeeting].date.slice(0,10)}</span></p>
-            <p><FontAwesomeIcon icon={faClock} />&nbsp;&nbsp;<strong> Godzina rozpoczęcia:</strong> <span className="inline float-end">{responseData.meetings[selectedMeeting].date.slice(12,16)}</span></p>
-            <p><FontAwesomeIcon icon={faLocationDot} />&nbsp;&nbsp;<strong> Miejsce:</strong> <span className="inline float-end">{responseData.meetings[selectedMeeting].room_name}</span></p>
+            <p><FontAwesomeIcon icon={faCalendarDays} />&nbsp;&nbsp;<strong> Data:</strong> <span className="inline float-end">{formatDate(selectedMeeting.date)}</span></p>
+            <p><FontAwesomeIcon icon={faClock} />&nbsp;&nbsp;<strong> Czas:</strong> <span className="inline float-end">{getTimeRange(selectedMeeting.date, selectedMeeting.duration)}</span></p>
+            <p><FontAwesomeIcon icon={faLocationDot} />&nbsp;&nbsp;<strong> Miejsce:</strong> <span className="inline float-end">{selectedMeeting.room_name}</span></p>
             </div>
             <hr className="gray-line my-2" />
-            {/*TODO Add description to database*/}
+
+            {/*TODO Ask backend for description from database - no data provided*/}
+
             <p className="mt-2 text-sm text-gray-600">
               Spotkanie projektowe ze studentami w celu dopracowania UI do perfekcji
             </p>
           </div>
 
+          {/* Participants section */}
           <div className="white-shadow-bordered-div h-[52vh] flex flex-col">
             <h2 className="text-lg font-semibold mb-2 text-blue-main">Uczestnicy</h2>
             <hr className="gray-line mx-2" />
@@ -231,15 +298,18 @@ export default function MultipleMeetingsPage(){
                 <li className="flex flex-row justify-between ">
                   <div className="flex flex-row items-left gap-2">
                   <div className="bg-gray-900 text-white h-[2em] aspect-square rounded-full float-left flex items-center justify-center text-2xl">K</div>
+
+                    {/* TODO: Ask backend for Meeting Owner - no data for now*/}
+
                     <span><b>Janina Kowalska</b><p className="text-sm text-gray-500">Senior Dev</p></span>
                   </div>
                   <span className="text-custom-teal">50 zł/h</span>
                 </li>
                 <hr className="gray-line mx-2" />
-                {responseData.meetings[selectedMeeting].participants.map((participant, idx) => (
+                {selectedMeeting.participants.map((participant, idx) => (
                   <li key={idx} className="flex flex-row justify-between ">
                   <div className="flex flex-row items-left gap-2">
-                  <div className="bg-gray-900 text-white h-[2em] aspect-square rounded-full float-left flex items-center justify-center text-2xl">JK</div>
+                  <div className="bg-gray-900 text-white h-[2em] aspect-square rounded-full float-left flex items-center justify-center text-2xl">{participant.username.charAt(0).toUpperCase()}</div>
                     <span><b>{participant.username}</b><p className="text-sm text-gray-500">{participant.role_name}</p></span>
                   </div>
                   <span className="text-custom-teal">{participant.hourly_cost.toFixed(2)} zł/h</span>
@@ -249,6 +319,7 @@ export default function MultipleMeetingsPage(){
             </div>
           </div>
 
+          {/* Additional Cost Section */}
           <div className="white-shadow-bordered-div h-[52vh] flex flex-col">
             <h2 className="text-lg font-semibold mb-2 text-blue-main">Dodatkowe koszty
             <FontAwesomeIcon icon={faPlusCircle} className="float-end text-white bg-black border-black border-2 rounded-full ml-4 cursor-pointer" onClick={()=>void 0}/>
@@ -256,13 +327,14 @@ export default function MultipleMeetingsPage(){
             <hr className="gray-line mx-2" />
             <div className="overflow-y-auto">
               <ul className="space-y-3 pt-3">
-                {responseData.meetings[selectedMeeting].additional_costs.map((cost,id) => (
-                  <li key={id} className="flex justify-between">{cost.name} <span className="text-custom-teal">{cost.cost.toFixed(2)}<FontAwesomeIcon icon={faEllipsisV} className="text-black pl-4 cursor-pointer" onClick={()=>void 0}/></span></li>
+                {selectedMeeting.additional_costs.map((cost,id) => (
+                  <li key={id} className="flex justify-between">{cost.name} <span className="text-custom-teal">{cost.cost.toFixed(2)} zł<FontAwesomeIcon icon={faEllipsisV} className="text-black pl-4 cursor-pointer" onClick={()=>void 0}/></span></li>
                   ))}
               </ul>
             </div>
           </div>
         </div>
+        )}
       </div>
     </div>
   );
