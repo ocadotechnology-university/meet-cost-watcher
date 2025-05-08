@@ -9,8 +9,8 @@ from google_auth_oauthlib.flow import InstalledAppFlow
 from google.auth.transport.requests import Request
 from googleapiclient.discovery import build
 
-credentials_path = 'app\\meet\\credentials.json'
-token_path = 'app\\meet\\token.json'
+credentials_path = 'credentials.json'
+token_path = 'token.json'
 
 SCOPES = ['https://www.googleapis.com/auth/calendar.readonly']
         
