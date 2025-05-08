@@ -52,7 +52,7 @@ export default function MultipleMeetingsPage(){
     if (filteredMeetings.length > 0 && !selectedMeetingId) {
       setSelectedMeetingId(filteredMeetings[0].id);
     }
-  }, [filteredMeetings]);
+  }, [filteredMeetings,selectedMeetingId]);
 
 
   {/* Function for formating time duration of the meeting */}
