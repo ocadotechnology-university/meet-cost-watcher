@@ -158,11 +158,24 @@ class MeetingSync(Resource):
     @auth.login_required
     def post(self):
         """Sync meetings with Google Calendar"""
+        data = request.get_json()
+        filters = None
+
+        if data:
+            try:
+                filters = MeetingsFilterParser(**data)
+            except Exception:
+                abort(400)
+
+        if filters is None:
+            filters = MeetingsFilterParser()
+
         try:
             save_meetings_from_calendar()
-            return {"message": "Meetings synced successfully"}, 200
-        except Exception as e:
-            return {"error": str(e)}, 500
+            return jsonify(meetings_all_resolver(filters=filters))
+        except Exception :
+            abort(400)
+
 
 
 @api.route("/single/<string:token>")

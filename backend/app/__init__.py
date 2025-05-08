@@ -1,4 +1,4 @@
-from flask import Flask
+from flask import Flask, session
 from flask_restx import Api # type: ignore
 from app.extensions import db
 from .routes import register_namespaces
@@ -14,6 +14,7 @@ load_dotenv()
 
 def create_app():
     app = Flask(__name__)
+    
 
     api = Api(app, title="Meet Cost Watcher", version="1.0")
 
@@ -26,5 +27,7 @@ def create_app():
     db.init_app(app)
 
     register_namespaces(api)
+
+    # session.clear()
 
     return app
