@@ -56,6 +56,7 @@ def meetings_all_resolver(filters: Optional[MeetingsFilters] = None):
 
     query = (
         db.select(Meeting)
+        .distinct()
         .outerjoin(AdditionalCost, Meeting.id == AdditionalCost.meeting_id)
         .outerjoin(meeting_users, Meeting.id == meeting_users.c.meeting_id)
         .outerjoin(User, meeting_users.c.user_id == User.id)

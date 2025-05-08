@@ -13,7 +13,7 @@ createRoot(document.getElementById("root")!).render(
         <Routes>
           <Route path="/" element={<LoginPage />} />
           <Route path="/token_login" element={<TokenLoginPage />} />
-          <Route path="/multiple_meetings" element={<MultipleMeetingsPage />} />
+          <Route path="/multiple_meetings" element={<MultipleMeetingsPage/>} />
         </Routes>
       </Router>
     </LoginProvider>

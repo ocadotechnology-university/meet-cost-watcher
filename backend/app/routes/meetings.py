@@ -119,7 +119,8 @@ class MeetingsAll(Resource):
                 filters = MeetingsFilterParser(**data)
             except Exception:
                 abort(400)
-
+        if filters is None:
+            filters = MeetingsFilterParser()
         return jsonify(meetings_all_resolver(filters=filters))
 
 
