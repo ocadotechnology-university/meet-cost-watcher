@@ -1,10 +1,10 @@
 from flask_restx import Namespace, Resource, fields
 from app.resolvers.meetings import meetings_all_resolver, meetings_single_resolver
-from flask.json import jsonify
 from flask import request
 from app.types import MeetingsFilters as MeetingsFilterParser
 from flask import abort
 from app.auth import auth
+from .common import build_return_type
 
 api = Namespace("meetings", description="meeting operations")
 
@@ -48,7 +48,6 @@ meetings_filters_model = api.model(
     },
 )
 
-# Define models for Swagger documentation
 meeting_model = api.model(
     "Meeting",
     {
@@ -102,8 +101,12 @@ meetings_all_output = api.model(
 class MeetingsAll(Resource):
 
     @api.doc(security="basicAuth")
-    @api.expect(meetings_filters_model)
-    @api.response(200, "Success", meetings_all_output)
+    @api.expect(meetings_all_output)
+    @api.response(
+        200,
+        "Success",
+        build_return_type(api, "meetings_all_response", meetings_all_output),
+    )
     @api.response(400, "Invalid filters")
     @api.response(401, "Unauthorized")
     @auth.login_required
@@ -120,19 +123,23 @@ class MeetingsAll(Resource):
             except Exception:
                 abort(400)
 
-        return jsonify(meetings_all_resolver(filters=filters))
+        return meetings_all_resolver(filters=filters, user=user)
 
 
 @api.route("/single/<string:token>")
 class MeetingsSingle(Resource):
 
     @api.doc(security="basicAuth")
-    @api.response(200, "Success", meeting_model)
+    @api.response(
+        200,
+        "Success",
+        build_return_type(api, "meetings_single_response", meeting_model),
+    )
     @api.response(400, "Invalid request")
     @api.response(404, "Meeting not found")
     def post(self, token):
         """Get a single meeting by token"""
         try:
-            return jsonify(meetings_single_resolver(token=token))
+            return meetings_single_resolver(token=token)
         except Exception:
             abort(404)

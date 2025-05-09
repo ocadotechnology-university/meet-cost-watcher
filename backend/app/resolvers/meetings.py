@@ -1,11 +1,13 @@
 # do poprawy  żeby wyciągał też participantów itp
-from app.models import User, Meeting, AdditionalCost, meeting_users
+from app.models import User, Meeting, AdditionalCost, meeting_users, AppRoles
 from app.extensions import db
 from typing import Optional
 from app.types import MeetingsFilters, SortingOrder
 from sqlalchemy import asc, desc
+from .common import jsonify_return
 
 
+@jsonify_return
 def meetings_single_resolver(token: str):
 
     meeting = (
@@ -49,10 +51,8 @@ def meetings_single_resolver(token: str):
     return meeting_json
 
 
-# przyjmuje i returnuje tylko obiekty pythona
-def meetings_all_resolver(filters: Optional[MeetingsFilters] = None):
-
-    # TODO: later introduce user roles filter
+@jsonify_return
+def meetings_all_resolver(user: User, filters: Optional[MeetingsFilters] = None):
 
     query = (
         db.select(Meeting)
@@ -61,32 +61,42 @@ def meetings_all_resolver(filters: Optional[MeetingsFilters] = None):
         .outerjoin(User, meeting_users.c.user_id == User.id)
     )
 
-    for name, value in filters.__dict__.items():
+    if user.app_role == AppRoles.EMPLOYEE:
+        query = query.filter(
+            (meeting_users.c.user_id == user.id) | (meeting_users.c.user_id == None)
+        )
 
-        if value is None:
-            continue
+    if filters:
+        for name, value in filters.__dict__.items():
 
-        column = getattr(Meeting, name.replace("_min", "").replace("_max", ""), None)
-        if column is None:
-            continue
+            if value is None:
+                continue
 
-        if "_min" in name:
-            query = query.filter(column >= value)
-        elif "_max" in name:
-            query = query.filter(column <= value)
-        else:
-            query = query.filter(column=value)
+            column = getattr(
+                Meeting, name.replace("_min", "").replace("_max", ""), None
+            )
+            if column is None:
+                continue
 
-        # TODO: add participant_ids
+            if "_min" in name:
+                query = query.filter(column >= value)
+            elif "_max" in name:
+                query = query.filter(column <= value)
+            else:
+                query = query.filter(column=value)
 
-    if sort := filters.sort_by:
-        column = getattr(Meeting, sort.field)
-        if sort.order == SortingOrder.ASC.value:
-            query = query.order_by(asc(column))
-        else:
-            query = query.order_by(desc(column))
+            # TODO: add participant_ids
+
+        if sort := filters.sort_by:
+            column = getattr(Meeting, sort.field)
+            if sort.order == SortingOrder.ASC.value:
+                query = query.order_by(asc(column))
+            else:
+                query = query.order_by(desc(column))
+
     meetings = []
     total_cost = 0
+
     for meeting in db.session.execute(query).all():
         meeting_json = {
             "id": meeting.Meeting.id,

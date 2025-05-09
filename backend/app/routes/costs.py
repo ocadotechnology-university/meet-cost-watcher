@@ -1,5 +1,4 @@
 from flask_restx import Namespace, Resource, fields
-from flask.json import jsonify
 from flask import request, abort
 from app.types import CreateAdditionalCostInput, UpdateAdditionalCostInput
 from app.resolvers.costs import (
@@ -8,11 +7,12 @@ from app.resolvers.costs import (
     update_additonal_cost_resolver,
 )
 from app.auth import auth
+from .common import build_return_type
 
 api = Namespace("additional costs", description="additional cost operations")
 
-create_additonal_cost_model = api.model(
-    "CreateAdditonalCostModel",
+create_additonal_cost_input = api.model(
+    "create_additional_cost_input",
     {
         "meeting_id": fields.Integer(description="Cost's meeting ID"),
         "name": fields.String(description="Cost name"),
@@ -20,19 +20,32 @@ create_additonal_cost_model = api.model(
     },
 )
 
-delete_additonal_cost_model = api.model(
-    "DeleteAdditonalCostModel",
+delete_additonal_cost_input = api.model(
+    "delete_additional_cost_input",
     {
         "id": fields.Integer(description="ID of additonal cost to delete"),
     },
 )
 
-update_additonal_cost_model = api.model(
-    "DeleteAdditonalCostModel",
+update_additonal_cost_input = api.model(
+    "update_additional_cost_input",
     {
         "id": fields.Integer(description="ID of additonal cost to modify"),
         "name": fields.String(description="Cost name"),
         "cost": fields.Float(description="Cost amount"),
+    },
+)
+
+additional_cost_output = api.model(
+    "additional_cost_output",
+    {
+        "status": fields.String(
+            enum=["success", "error"],
+            description="Indicates the status of response",
+        ),
+        "content": fields.Boolean(
+            description="True if success, String if error",
+        ),
     },
 )
 
@@ -41,14 +54,13 @@ update_additonal_cost_model = api.model(
 class AdditionalCosts(Resource):
 
     @api.doc(security="basicAuth")
-    @api.expect(create_additonal_cost_model)
+    @api.expect(create_additonal_cost_input)
     @api.response(401, "Unauthorized")
-    @api.response(200, "OK")
+    @api.response(200, "OK", additional_cost_output)
     @api.response(400, "Invalid request")
     @auth.login_required
     def post(self):
         """Create additonal cost"""
-        # later check if user has permissions to add smth to this meeting
         user = auth.current_user()
         data = request.get_json()
 
@@ -57,34 +69,32 @@ class AdditionalCosts(Resource):
         except Exception:
             abort(400)
 
-        return create_additonal_cost_resolver(input=input)
+        return create_additonal_cost_resolver(input=input, user=user)
 
     @api.doc(security="basicAuth")
-    @api.expect(delete_additonal_cost_model)
+    @api.expect(delete_additonal_cost_input)
     @api.response(401, "Unauthorized")
-    @api.response(200, "OK")
+    @api.response(200, "OK", additional_cost_output)
     @api.response(400, "Invalid request")
     @auth.login_required
     def delete(self):
         "Delete given additional cost object"
-        # later check if user has permissions to add smth to this meeting
         user = auth.current_user()
         data = request.get_json()
 
         if not (id := data.get("id")):
             abort(400)
 
-        return delete_additonal_cost_resolver(id=id)
+        return delete_additonal_cost_resolver(id=id, user=user)
 
     @api.doc(security="basicAuth")
-    @api.expect(update_additonal_cost_model)
+    @api.expect(update_additonal_cost_input)
     @api.response(401, "Unauthorized")
-    @api.response(200, "OK")
+    @api.response(200, "OK", additional_cost_output)
     @api.response(400, "Invalid request")
     @auth.login_required
     def put(self):
         "Modify given additional cost object"
-        # later check if user has permissions to add smth to this meeting
         user = auth.current_user()
         data = request.get_json()
 
@@ -93,4 +103,7 @@ class AdditionalCosts(Resource):
         except Exception:
             abort(400)
 
-        return update_additonal_cost_resolver(input=input)
+        try:
+            return update_additonal_cost_resolver(input=input, user=user)
+        except Exception as e:
+            abort(400)
