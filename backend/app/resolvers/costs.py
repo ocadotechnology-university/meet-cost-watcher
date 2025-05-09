@@ -4,7 +4,7 @@ from app.extensions import db
 from .common import jsonify_return
 
 
-def __validate_additional_cost(id: int, user: User):
+def __validate_additional_cost(id: int, user: User) -> AdditionalCost:
     query = (
         db.select(AdditionalCost)
         .join(Meeting, Meeting.id == AdditionalCost.meeting_id)
@@ -13,10 +13,12 @@ def __validate_additional_cost(id: int, user: User):
         .filter(AdditionalCost.id == id)
     )
 
-    additional_cost = db.session.execute(query).first()[0]
+    additional_cost = db.session.execute(query).first()
 
     if not additional_cost:
         raise Exception("Couldn't find provided additional cost")
+
+    additional_cost = additional_cost[0]
 
     if (
         user.app_role != AppRoles.ADMIN
@@ -28,9 +30,7 @@ def __validate_additional_cost(id: int, user: User):
 
 
 @jsonify_return
-def create_additonal_cost_resolver(
-    input: CreateAdditionalCostInput, user: User
-) -> bool:
+def create_additonal_cost_resolver(input: CreateAdditionalCostInput, user: User) -> int:
 
     if user.app_role != AppRoles.ADMIN:
         query = (
@@ -45,30 +45,26 @@ def create_additonal_cost_resolver(
             raise Exception(
                 "You dont have permission to add additional cost to this meeting"
             )
-
-    db.session.add(
-        AdditionalCost(meeting_id=input.meeting_id, name=input.name, cost=input.cost)
-    )
+    cost = AdditionalCost(meeting_id=input.meeting_id, name=input.name, cost=input.cost)
+    db.session.add(cost)
     db.session.commit()
-    return True
+    return cost.id
 
 
 @jsonify_return
-def delete_additonal_cost_resolver(id: int, user: User) -> bool:
+def delete_additonal_cost_resolver(id: int, user: User) -> str:
 
     additional_cost = __validate_additional_cost(id=id, user=user)
     db.session.delete(additional_cost)
     db.session.commit()
-    return True
+    return ""
 
 
 @jsonify_return
-def update_additonal_cost_resolver(
-    input: UpdateAdditionalCostInput, user: User
-) -> bool:
+def update_additonal_cost_resolver(input: UpdateAdditionalCostInput, user: User) -> str:
 
-    additional_cost = __validate_additional_cost(id=id, user=user)
+    additional_cost = __validate_additional_cost(id=input.id, user=user)
     additional_cost.cost = input.cost
     additional_cost.name = input.name
     db.session.commit()
-    return True
+    return ""

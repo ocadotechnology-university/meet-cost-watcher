@@ -43,8 +43,21 @@ additional_cost_output = api.model(
             enum=["success", "error"],
             description="Indicates the status of response",
         ),
-        "content": fields.Boolean(
-            description="True if success, String if error",
+        "content": fields.String(
+            description="Empty if success",
+        ),
+    },
+)
+
+additional_cost_output1 = api.model(
+    "additional_cost_output1",
+    {
+        "status": fields.String(
+            enum=["success", "error"],
+            description="Indicates the status of response",
+        ),
+        "content": fields.Integer(
+            description="id of added additional cost",
         ),
     },
 )
@@ -56,7 +69,7 @@ class AdditionalCosts(Resource):
     @api.doc(security="basicAuth")
     @api.expect(create_additonal_cost_input)
     @api.response(401, "Unauthorized")
-    @api.response(200, "OK", additional_cost_output)
+    @api.response(200, "OK", additional_cost_output1)
     @api.response(400, "Invalid request")
     @auth.login_required
     def post(self):
