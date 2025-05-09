@@ -3,7 +3,7 @@ import os
 import uuid
 
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
-from app.models import User, Meeting, AdditionalCost
+from app.models import User, Meeting, AdditionalCost, AppRoles
 from app.extensions import db
 from faker import Faker
 from app import create_app
@@ -24,6 +24,7 @@ if __name__ == "__main__":
                 username=fake.user_name(),
                 role_name=random.choice(roles),
                 hourly_cost=random.uniform(30, 150),
+                app_role=random.choice(list(AppRoles)),
             )
             rand_user.hash_password("123")
             db.session.add(rand_user)
