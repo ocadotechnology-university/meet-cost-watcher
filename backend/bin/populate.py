@@ -46,6 +46,13 @@ if __name__ == "__main__":
                 hours=random.randint(9, 17),
                 minutes=random.randint(0, 59),
             )
+
+            creation_time = datetime.now() - timedelta(
+                days=random.randint(0, 30),
+                hours=random.randint(9, 17),
+                minutes=random.randint(0, 59),
+            )
+
             duration = random.randint(30, 180)
 
             rand_meeting = Meeting(
@@ -55,6 +62,7 @@ if __name__ == "__main__":
                 room_name=random.choice(room_names),
                 cost=random.uniform(100, 1000),
                 token=str(uuid.uuid4()),
+                created_at=creation_time,
             )
             db.session.add(rand_meeting)
             meetings.append(rand_meeting)

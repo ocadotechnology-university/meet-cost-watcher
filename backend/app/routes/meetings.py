@@ -24,6 +24,13 @@ meetings_sorting_model = api.model(
 meetings_all_input = api.model(
     "MeetingsFilters",
     {
+        "per_page": fields.Integer(
+            description="how much per pagination page is returned records",
+            required=True,
+        ),
+        "page": fields.Integer(
+            description="number of requested pagination page", required=True
+        ),
         "name": fields.String(description="Filter by meeting name", required=False),
         "duration_min": fields.Integer(
             description="Minimum meeting duration in minutes", required=False
@@ -120,6 +127,13 @@ class MeetingsAll(Resource):
         if data:
             try:
                 filters = MeetingsFilterParser(**data)
+            except Exception:
+                abort(400)
+        else:
+            try:
+                filters = MeetingsFilterParser(
+                    page=data.get("page"), per_page=data.get("per_page")
+                )
             except Exception:
                 abort(400)
 

@@ -89,46 +89,48 @@ def meetings_all_resolver(user: User, filters: Optional[MeetingsFilters] = None)
             else:
                 query = query.filter(column=value)
 
-            # TODO: add participant_ids
-
-        breakpoint()
-        from sqlalchemy.dialects import postgresql
-
-        print(query.compile(dialect=postgresql.dialect()))
-        print("dupa")
         if sort := filters.sort_by:
             column = getattr(Meeting, sort.field)
             if sort.order == SortingOrder.ASC.value:
                 query = query.order_by(asc(column))
             else:
                 query = query.order_by(desc(column))
+        else:
+            query = query.order_by(asc(Meeting.created_at))
 
     meetings = []
     total_cost = 0
 
-    for meeting in db.session.execute(query).all():
+    pagination_result = db.paginate(
+        query.distinct(Meeting.id),
+        page=filters.page,
+        per_page=filters.per_page,
+        max_per_page=200,
+    )
+
+    for meeting in pagination_result.items:
         meeting_json = {
-            "id": meeting.Meeting.id,
-            "token": meeting.Meeting.token,
-            "title": meeting.Meeting.name,
-            "date": meeting.Meeting.start_datetime.isoformat(),
-            "duration": meeting.Meeting.duration,
-            "room_name": meeting.Meeting.room_name,
-            "cost": meeting.Meeting.cost,
+            "id": meeting.id,
+            "token": meeting.token,
+            "title": meeting.name,
+            "date": meeting.start_datetime.isoformat(),
+            "duration": meeting.duration,
+            "room_name": meeting.room_name,
+            "cost": meeting.cost,
             "participants": [],
             "additional_costs": [],
         }
 
-        total_cost += meeting.Meeting.cost
+        total_cost += meeting.cost
 
-        for cost in meeting.Meeting.additional_costs.all():
+        for cost in meeting.additional_costs.all():
             meeting_json["additional_costs"].append(
                 {"id": cost.id, "name": cost.name, "cost": cost.cost}
             )
 
             total_cost += cost.cost
 
-        for participant in meeting.Meeting.users.all():
+        for participant in meeting.users.all():
             meeting_json["participants"].append(
                 {
                     "id": participant.id,

@@ -10,6 +10,7 @@ class Meeting(db.Model):
     duration = db.Column(db.Integer, nullable=False)  # Duration in minutes
     room_name = db.Column(db.String(64))
     cost = db.Column(db.Float)
+    created_at = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
 
     # Relationship with additional costs
     additional_costs = db.relationship(
