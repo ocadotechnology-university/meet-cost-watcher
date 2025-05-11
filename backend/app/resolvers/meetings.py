@@ -72,6 +72,10 @@ def meetings_all_resolver(user: User, filters: Optional[MeetingsFilters] = None)
             if value is None:
                 continue
 
+            if name == "participant_ids":
+                query = query.filter(meeting_users.c.user_id.in_(value))
+                continue
+
             column = getattr(
                 Meeting, name.replace("_min", "").replace("_max", ""), None
             )
@@ -87,6 +91,11 @@ def meetings_all_resolver(user: User, filters: Optional[MeetingsFilters] = None)
 
             # TODO: add participant_ids
 
+        breakpoint()
+        from sqlalchemy.dialects import postgresql
+
+        print(query.compile(dialect=postgresql.dialect()))
+        print("dupa")
         if sort := filters.sort_by:
             column = getattr(Meeting, sort.field)
             if sort.order == SortingOrder.ASC.value:

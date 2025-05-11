@@ -21,7 +21,7 @@ meetings_sorting_model = api.model(
     },
 )
 
-meetings_filters_model = api.model(
+meetings_all_input = api.model(
     "MeetingsFilters",
     {
         "name": fields.String(description="Filter by meeting name", required=False),
@@ -101,7 +101,7 @@ meetings_all_output = api.model(
 class MeetingsAll(Resource):
 
     @api.doc(security="basicAuth")
-    @api.expect(meetings_all_output)
+    @api.expect(meetings_all_input)
     @api.response(
         200,
         "Success",
