@@ -107,7 +107,6 @@ def meetings_all_resolver(user: User, filters: Optional[MeetingsFilters] = None)
         per_page=filters.per_page,
         max_per_page=200,
     )
-
     for meeting in pagination_result.items:
         meeting_json = {
             "id": meeting.id,
@@ -117,6 +116,7 @@ def meetings_all_resolver(user: User, filters: Optional[MeetingsFilters] = None)
             "duration": meeting.duration,
             "room_name": meeting.room_name,
             "cost": meeting.cost,
+            "owner": {"id": meeting.owner.id, "username": meeting.owner.username},
             "participants": [],
             "additional_costs": [],
         }

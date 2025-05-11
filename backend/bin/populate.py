@@ -14,7 +14,7 @@ if __name__ == "__main__":
 
     fake = Faker()
     with create_app().app_context():
-
+        db.drop_all()
         db.create_all()
 
         users = []
@@ -63,6 +63,8 @@ if __name__ == "__main__":
                 cost=random.uniform(100, 1000),
                 token=str(uuid.uuid4()),
                 created_at=creation_time,
+                description=fake.sentence(nb_words=random.uniform(5, 50)),
+                owner_id=random.choice(users).id,
             )
             db.session.add(rand_meeting)
             meetings.append(rand_meeting)
@@ -89,6 +91,7 @@ if __name__ == "__main__":
 
         for meeting in meetings:
             meeting_users = random.sample(users, random.randint(2, 5))
+            meeting.owner_id = meeting_users[0].id
             for user in meeting_users:
                 meeting.users.append(user)
 
