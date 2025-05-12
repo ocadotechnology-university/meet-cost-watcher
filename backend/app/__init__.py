@@ -3,6 +3,7 @@ from flask_restx import Api
 from app.extensions import db
 from .routes import register_namespaces
 import os
+
 from flask_cors import CORS
 from dotenv import load_dotenv
 
