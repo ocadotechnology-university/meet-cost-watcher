@@ -1,6 +1,7 @@
 import datetime
-import os.path
-
+import os
+import json
+from dotenv import load_dotenv
 from app.models import Meeting, User
 from app import db
 
@@ -9,7 +10,10 @@ from google_auth_oauthlib.flow import InstalledAppFlow
 from google.auth.transport.requests import Request
 from googleapiclient.discovery import build
 
-credentials_path = 'credentials.json'
+# credentials_path = 'credentials.json'
+load_dotenv()
+credentials_str = os.getenv("CREDENTIALS")
+credentials_json = json.loads(credentials_str)
 token_path = 'token.json'
 
 SCOPES = ['https://www.googleapis.com/auth/calendar.readonly']
@@ -32,8 +36,8 @@ def authorize():
         if creds and creds.expired and creds.refresh_token:
             creds.refresh(Request())
         else:
-            flow = InstalledAppFlow.from_client_secrets_file(
-                credentails_path, SCOPES)
+            # flow = InstalledAppFlow.from_client_secrets_file(credentails_path, SCOPES)
+            flow = InstalledAppFlow.from_client_config(credentials_json, SCOPES)
             creds = flow.run_local_server(port=0)
         
         with open(token_path, 'w') as token:
