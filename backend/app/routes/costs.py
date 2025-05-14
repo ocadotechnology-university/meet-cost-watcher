@@ -14,25 +14,25 @@ api = Namespace("additional costs", description="additional cost operations")
 create_additonal_cost_input = api.model(
     "create_additional_cost_input",
     {
-        "meeting_id": fields.Integer(description="Cost's meeting ID"),
-        "name": fields.String(description="Cost name"),
-        "cost": fields.Float(description="Cost amount"),
+        "meeting_id": fields.Integer(description="Cost's meeting ID", required=True),
+        "name": fields.String(description="Cost name", required=True),
+        "cost": fields.Float(description="Cost amount", required=True),
     },
 )
 
 delete_additonal_cost_input = api.model(
     "delete_additional_cost_input",
     {
-        "id": fields.Integer(description="ID of additonal cost to delete"),
+        "id": fields.Integer(description="ID of additonal cost to delete", required=True),
     },
 )
 
 update_additonal_cost_input = api.model(
     "update_additional_cost_input",
     {
-        "id": fields.Integer(description="ID of additonal cost to modify"),
-        "name": fields.String(description="Cost name"),
-        "cost": fields.Float(description="Cost amount"),
+        "id": fields.Integer(description="ID of additonal cost to modify", required=True),
+        "name": fields.String(description="Cost name", required=True),
+        "cost": fields.Float(description="Cost amount", required=True),
     },
 )
 
@@ -41,10 +41,10 @@ additional_cost_output = api.model(
     {
         "status": fields.String(
             enum=["success", "error"],
-            description="Indicates the status of response",
+            description="Indicates the status of response",required=True
         ),
         "content": fields.String(
-            description="Empty if success",
+            description="Empty if success",required=True
         ),
     },
 )
@@ -54,10 +54,10 @@ additional_cost_output1 = api.model(
     {
         "status": fields.String(
             enum=["success", "error"],
-            description="Indicates the status of response",
+            description="Indicates the status of response",required=True
         ),
         "content": fields.Integer(
-            description="id of added additional cost",
+            description="id of added additional cost",required=True
         ),
     },
 )

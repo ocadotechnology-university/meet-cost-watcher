@@ -117,7 +117,6 @@ def meetings_all_resolver(user: User, filters: Optional[MeetingsFilters] = None)
             "duration": meeting.duration,
             "room_name": meeting.room_name,
             "cost": meeting.cost,
-            "owner": {"id": meeting.owner.id, "username": meeting.owner.username},
             "participants": [],
             "additional_costs": [],
         }
@@ -131,6 +130,8 @@ def meetings_all_resolver(user: User, filters: Optional[MeetingsFilters] = None)
 
             total_cost += cost.cost
 
+        owner_id = meeting.owner.id
+
         for participant in meeting.users.all():
             meeting_json["participants"].append(
                 {
@@ -138,6 +139,7 @@ def meetings_all_resolver(user: User, filters: Optional[MeetingsFilters] = None)
                     "username": participant.username,
                     "role_name": participant.role_name,
                     "hourly_cost": participant.hourly_cost,
+                    "is_owner": participant.id == owner_id,
                 }
             )
 

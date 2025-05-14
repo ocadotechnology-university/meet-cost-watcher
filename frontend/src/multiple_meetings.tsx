@@ -21,7 +21,7 @@ export default function MultipleMeetingsPage(){
   const [searchTerm, setSearchTerm] = useState('');
   const location = useLocation();
   const responseData = location.state as MeetingResponse;
-
+  const backendURL = "http://127.0.0.1:5000";
   {/* Function handling meeting selection on list - gets id of chosen meeting and sets state */}
   const handleMeetingSelection = (id: number) => {
     setSelectedMeetingId(id === selectedMeetingId ? null : id);
@@ -29,27 +29,24 @@ export default function MultipleMeetingsPage(){
 
   {/* Function that handles filtering by name or by token dynamically */}
   const filteredMeetings = useMemo(() => {
-    return responseData.meetings.filter( meeting =>
-    meeting.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    meeting.token.toLowerCase().includes(searchTerm.toLowerCase())
-    );
-
-  }, [responseData.meetings,searchTerm]);
+    return responseData.value.meetings;
+  }, [responseData.value.meetings]);
 
   {/* Function that calculates sum of filtered meetings */}
-  const totalCost = useMemo(() => {
-    return filteredMeetings.reduce((sum, meeting) => sum + meeting.cost, 0);
-  }, [filteredMeetings]);
+  // const totalCost = useMemo(() => {
+  //   return filteredMeetings.reduce((sum, meeting) => sum + meeting.cost, 0);
+  // }, [filteredMeetings]);
 
   {/* Function that finds currently selected meeting - works with filtering */}
   const selectedMeeting = useMemo(() => {
+    // return filteredMeetings[0];
     return filteredMeetings.find(m => m.id === selectedMeetingId) ||
         filteredMeetings[0] || null;
   }, [filteredMeetings, selectedMeetingId]);
 
   {/* Sets first meeting on list by deafault */}
   useEffect(() => {
-    if (filteredMeetings.length > 0 && !selectedMeetingId) {
+    if (filteredMeetings.length && !selectedMeetingId) {
       setSelectedMeetingId(filteredMeetings[0].id);
     }
   }, [filteredMeetings,selectedMeetingId]);
@@ -89,19 +86,21 @@ export default function MultipleMeetingsPage(){
   return (
     <div className="bg-[#f6f6f6] min-h-screen min-w-screen text-gray-900 overflow-hidden">
       {filterVisibility && (
-        <div 
+        <div
           className="w-1/6 min-h-screen bg-white float-left pt-4 rounded-r-2xl shadow p-4 border border-gray-200 flex flex-col gap-3"
           onDoubleClick={() => setFilterVisibility(false)}
           // onMouseLeave={() => setFilterVisibility(false)}
         >
           <h2 className="text-center font-bold text-[1.5em] text-blue-900">WYSZUKAJ SPOTKANIA</h2>
 
-          <input 
-            type="text" 
-            placeholder="Wpisz kod lub nazwę spotkania" 
+          <input
+            type="text"
+            placeholder="Wpisz kod lub nazwę spotkania"
             className="text-sm text-gray-600 text-center border border-gray-300 rounded-lg p-1 focus:outline-none"
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
           />
-        
+
           <div className="flex gap-2">
             <label>od:</label>
             <input type="date" className="w-1/2 text-xs border border-gray-300 rounded-lg p-1" />
@@ -112,10 +111,10 @@ export default function MultipleMeetingsPage(){
             <input type="date" className="w-1/2 text-xs border border-gray-300 rounded-lg p-1" />
             <input type="time" className="w-1/2 text-xs border border-gray-300 rounded-lg p-1" />
           </div>
-        
+
           {/* Suwak dla czasu trwania */}
           <div>
-            <label className="text-sm text-gray-700">Czas trwania 
+            <label className="text-sm text-gray-700">Czas trwania
               <span className="float-end">{` ${durationRange[0]}-${durationRange[1]} min`}</span>
             </label>
             <Slider
@@ -140,14 +139,14 @@ export default function MultipleMeetingsPage(){
               onChange={(value: number[]) => setCostRange(value as [number, number])}
             />
           </div>
-        
+
           <label className="text-sm text-gray-700">Osoby</label>
           <div className="">
             <span className="bg-purple-400 text-white self-center rounded px-2 py-1 mr-2 text-sm">Osoba 1 ×</span>
             <span className="bg-purple-400 text-white self-center rounded px-2 py-1 mr-2 text-sm">Osoba 2 ×</span>
             <button className="float-end w-[2em] h-[2em] rounded-full bg-blue-700 text-white flex items-center justify-center text-sm"><FontAwesomeIcon icon={faPlus}/></button>
         </div>
-      
+
         <label className="text-sm text-gray-700 mt-2">Sortowanie</label>
         <select className="text-sm border border-gray-300 rounded-lg p-1 w-full">
           <option>Data (malejąco)</option>
@@ -155,9 +154,9 @@ export default function MultipleMeetingsPage(){
           <option>Koszt (malejąco)</option>
           <option>Koszt (rosnąco)</option>
         </select>
-      
+
         <button className="mt-2 bg-blue-800 text-white rounded-md p-2 text-sm">Szukaj</button>
-      
+
         <div className="absolute p-0 m-0 left-0 bottom-6 w-1/6">
           <hr className="gray-line" />
           <div className=" align-middle gap-2 text-sm text-gray-600 w-full pl-5 pt-3">
@@ -170,14 +169,14 @@ export default function MultipleMeetingsPage(){
             </div>
         </div>
       </div>
-      
+
       )}
 
       {/* Central part of the page */}
       <div className="text-center p-6">
-        <h1 className="text-6xl font-normal text-blue-main">{totalCost.toFixed(2)} zł</h1>
+        <h1 className="text-6xl font-normal text-blue-main">{responseData.value.total_cost.toFixed(2)} zł</h1>
         <p className="text-lg">CAŁKOWITY KOSZT WYBRANYCH SPOTKAŃ</p>
-        <div 
+        <div
             style={{ backgroundImage: `url(${logo})` }}
             className="top-6 right-6 absolute object-cover w-[6em] h-[6em] rounded-2xl bg-size-[130%] box-border overflow-hidden bg-center bg-no-repeat ">
         </div>
@@ -204,8 +203,8 @@ export default function MultipleMeetingsPage(){
             type="text"
             placeholder="Wpisz kod lub nazwę spotkania"
             className="mb-4 w-full bg-white rounded-xl shadow border-1 border-gray-200 text-[1em] text-center p-2 focus:outline-none focus:ring-2 focus:ring-blue-500 h-fit"
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
+            // value={searchTerm}
+            // onChange={(e) => setSearchTerm(e.target.value)}
           />
           <div className="white-shadow-bordered-div col-span-1 h-full">
             <div className="h-full max-h-[80vh] overflow-y-auto pr-2">
@@ -230,7 +229,7 @@ export default function MultipleMeetingsPage(){
                     <span> {formatDuration(m.duration)}</span>
                     <span className="text-custom-teal font-semibold">{m.cost.toFixed(2)} zł</span>
                   </div>
-                  
+
                 </div>
               </li>
               <hr className="gray-line mx-2" />
@@ -272,7 +271,7 @@ export default function MultipleMeetingsPage(){
           <hr className="gray-line mx-2 h-0 col-span-3 flex flex-col" />
           <div className="white-shadow-bordered-div h-[52vh]">
             <h2 className="text-lg font-semibold mb-2 text-blue-main">Szczegóły spotkania</h2>
-            <hr className="gray-line my-3" />        
+            <hr className="gray-line my-3" />
             <div className="flex flex-col gap-y-3 overflow-y-auto">
             <p><FontAwesomeIcon icon={faLink} />&nbsp;&nbsp;<strong> Kod:</strong> <span className="inline float-end">{selectedMeeting.token}</span></p>
             <hr className="gray-line" />
@@ -301,13 +300,14 @@ export default function MultipleMeetingsPage(){
 
                     {/* TODO: Ask backend for Meeting Owner - no data for now*/}
 
-                    <span><b>Janina Kowalska</b><p className="text-sm text-gray-500">Senior Dev</p></span>
+                    <span><b>{selectedMeeting.owner.username}</b><p className="text-sm text-gray-500">Senior Dev</p></span>
                   </div>
                   <span className="text-custom-teal">50 zł/h</span>
                 </li>
                 <hr className="gray-line mx-2" />
-                {selectedMeeting.participants.map((participant, idx) => (
-                  <li key={idx} className="flex flex-row justify-between ">
+
+                {selectedMeeting.participants.map((participant) => (
+                  <li key ={participant.id} className="flex flex-row justify-between ">
                   <div className="flex flex-row items-left gap-2">
                   <div className="bg-gray-900 text-white h-[2em] aspect-square rounded-full float-left flex items-center justify-center text-2xl">{participant.username.charAt(0).toUpperCase()}</div>
                     <span><b>{participant.username}</b><p className="text-sm text-gray-500">{participant.role_name}</p></span>
@@ -327,8 +327,8 @@ export default function MultipleMeetingsPage(){
             <hr className="gray-line mx-2" />
             <div className="overflow-y-auto">
               <ul className="space-y-3 pt-3">
-                {selectedMeeting.additional_costs.map((cost,id) => (
-                  <li key={id} className="flex justify-between">{cost.name} <span className="text-custom-teal">{cost.cost.toFixed(2)} zł<FontAwesomeIcon icon={faEllipsisV} className="text-black pl-4 cursor-pointer" onClick={()=>void 0}/></span></li>
+                {selectedMeeting.additional_costs.map((cost) => (
+                  <li key={cost.id} className="flex justify-between">{cost.name} <span className="text-custom-teal">{cost.cost.toFixed(2)} zł<FontAwesomeIcon icon={faEllipsisV} className="text-black pl-4 cursor-pointer" onClick={()=>void 0}/></span></li>
                   ))}
               </ul>
             </div>
