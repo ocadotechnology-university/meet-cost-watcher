@@ -1,11 +1,11 @@
-from flask import Flask
-from flask_restx import Api
+from flask import Flask, session
+from flask_restx import Api  # type: ignore
 from app.extensions import db
 from .routes import register_namespaces
 import os
 
 from flask_cors import CORS
-from dotenv import load_dotenv
+from dotenv import load_dotenv  # type: ignore
 
 load_dotenv()
 
@@ -24,5 +24,7 @@ def create_app():
     db.init_app(app)
 
     register_namespaces(api)
+
+    # session.clear()
 
     return app
