@@ -1,10 +1,10 @@
 from flask_restx import Namespace, Resource, fields
 from app.resolvers.meetings import meetings_all_resolver, meetings_single_resolver
-from flask.json import jsonify
 from flask import request
 from app.types import MeetingsFilters as MeetingsFilterParser
 from flask import abort
 from app.auth import auth
+from .common import build_return_type
 
 api = Namespace("meetings", description="meeting operations")
 
@@ -21,9 +21,16 @@ meetings_sorting_model = api.model(
     },
 )
 
-meetings_filters_model = api.model(
+meetings_all_input = api.model(
     "MeetingsFilters",
     {
+        "per_page": fields.Integer(
+            description="how much per pagination page is returned records",
+            required=True,
+        ),
+        "page": fields.Integer(
+            description="number of requested pagination page", required=True
+        ),
         "name": fields.String(description="Filter by meeting name", required=False),
         "duration_min": fields.Integer(
             description="Minimum meeting duration in minutes", required=False
@@ -48,7 +55,6 @@ meetings_filters_model = api.model(
     },
 )
 
-# Define models for Swagger documentation
 meeting_model = api.model(
     "Meeting",
     {
@@ -57,6 +63,14 @@ meeting_model = api.model(
         "title": fields.String(description="Meeting title"),
         "date": fields.DateTime(description="Meeting start date"),
         "duration": fields.Integer(description="Meeting duration in minutes"),
+        "description": fields.String(description="meeting description if exists"),
+        "owner": api.model(
+            "Owner",
+            {
+                "id": fields.Integer(description="User ID"),
+                "username": fields.String(description="Username"),
+            },
+        ),
         "room_name": fields.String(description="Meeting room name"),
         "cost": fields.Float(description="Meeting cost"),
         "participants": fields.List(
@@ -102,8 +116,12 @@ meetings_all_output = api.model(
 class MeetingsAll(Resource):
 
     @api.doc(security="basicAuth")
-    @api.expect(meetings_filters_model)
-    @api.response(200, "Success", meetings_all_output)
+    @api.expect(meetings_all_input)
+    @api.response(
+        200,
+        "Success",
+        build_return_type(api, "meetings_all_response", meetings_all_output),
+    )
     @api.response(400, "Invalid filters")
     @api.response(401, "Unauthorized")
     @auth.login_required
@@ -119,21 +137,32 @@ class MeetingsAll(Resource):
                 filters = MeetingsFilterParser(**data)
             except Exception:
                 abort(400)
-        if filters is None:
-            filters = MeetingsFilterParser()
-        return jsonify(meetings_all_resolver(filters=filters))
+        else:
+            try:
+                filters = MeetingsFilterParser(
+                    page=data.get("page"), per_page=data.get("per_page")
+                )
+            except Exception:
+                abort(400)
+        # if filters is None:
+        #     filters = MeetingsFilterParser()
+        return meetings_all_resolver(filters=filters, user=user)
 
 
 @api.route("/single/<string:token>")
 class MeetingsSingle(Resource):
 
     @api.doc(security="basicAuth")
-    @api.response(200, "Success", meeting_model)
+    @api.response(
+        200,
+        "Success",
+        build_return_type(api, "meetings_single_response", meeting_model),
+    )
     @api.response(400, "Invalid request")
     @api.response(404, "Meeting not found")
     def post(self, token):
         """Get a single meeting by token"""
         try:
-            return jsonify(meetings_single_resolver(token=token))
+            return meetings_single_resolver(token=token)
         except Exception:
             abort(404)

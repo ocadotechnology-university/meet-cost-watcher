@@ -24,6 +24,8 @@ class MeetingsSorting:
 
 @dataclass
 class MeetingsFilters:
+    page: int
+    per_page: int
     name: Optional[str] = None
     duration_min: Optional[int] = None
     duration_max: Optional[int] = None

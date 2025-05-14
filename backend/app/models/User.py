@@ -1,6 +1,12 @@
 from flask_sqlalchemy import SQLAlchemy
 from . import db
 from passlib.apps import custom_app_context as pwd_context
+from enum import Enum
+
+
+class AppRoles(Enum):
+    ADMIN = "admin"
+    EMPLOYEE = "employee"
 
 
 class User(db.Model):
@@ -9,6 +15,7 @@ class User(db.Model):
     password_hash = db.Column(db.String(128))
     role_name = db.Column(db.String(64))
     hourly_cost = db.Column(db.Float)
+    app_role = db.Column(db.Enum(AppRoles))
 
     meetings = db.relationship(
         "Meeting",

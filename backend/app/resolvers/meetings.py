@@ -1,11 +1,13 @@
 # do poprawy  żeby wyciągał też participantów itp
-from app.models import User, Meeting, AdditionalCost, meeting_users
+from app.models import User, Meeting, AdditionalCost, meeting_users, AppRoles
 from app.extensions import db
 from typing import Optional
 from app.types import MeetingsFilters, SortingOrder
 from sqlalchemy import asc, desc
+from .common import jsonify_return
 
 
+@jsonify_return
 def meetings_single_resolver(token: str):
 
     meeting = (
@@ -49,10 +51,8 @@ def meetings_single_resolver(token: str):
     return meeting_json
 
 
-# przyjmuje i returnuje tylko obiekty pythona
-def meetings_all_resolver(filters: Optional[MeetingsFilters] = None):
-
-    # TODO: later introduce user roles filter
+@jsonify_return
+def meetings_all_resolver(user: User, filters: Optional[MeetingsFilters] = None):
 
     query = (
         db.select(Meeting)
@@ -62,55 +62,76 @@ def meetings_all_resolver(filters: Optional[MeetingsFilters] = None):
         .outerjoin(User, meeting_users.c.user_id == User.id)
     )
 
-    for name, value in filters.__dict__.items():
+    if user.app_role == AppRoles.EMPLOYEE:
+        query = query.filter(
+            (meeting_users.c.user_id == user.id) | (meeting_users.c.user_id == None)
+        )
 
-        if value is None:
-            continue
+    if filters:
+        for name, value in filters.__dict__.items():
 
-        column = getattr(Meeting, name.replace("_min", "").replace("_max", ""), None)
-        if column is None:
-            continue
+            if value is None:
+                continue
 
-        if "_min" in name:
-            query = query.filter(column >= value)
-        elif "_max" in name:
-            query = query.filter(column <= value)
+            if name == "participant_ids":
+                query = query.filter(meeting_users.c.user_id.in_(value))
+                continue
+
+            column = getattr(
+                Meeting, name.replace("_min", "").replace("_max", ""), None
+            )
+            if column is None:
+                continue
+
+            if "_min" in name:
+                query = query.filter(column >= value)
+            elif "_max" in name:
+                query = query.filter(column <= value)
+            else:
+                query = query.filter(column=value)
+
+        if sort := filters.sort_by:
+            column = getattr(Meeting, sort.field)
+            if sort.order == SortingOrder.ASC.value:
+                query = query.order_by(asc(column))
+            else:
+                query = query.order_by(desc(column))
         else:
-            query = query.filter(column=value)
+            query = query.order_by(asc(Meeting.created_at))
 
-        # TODO: add participant_ids
-
-    if sort := filters.sort_by:
-        column = getattr(Meeting, sort.field)
-        if sort.order == SortingOrder.ASC.value:
-            query = query.order_by(asc(column))
-        else:
-            query = query.order_by(desc(column))
     meetings = []
     total_cost = 0
-    for meeting in db.session.execute(query).all():
+
+    pagination_result = db.paginate(
+        query.distinct(Meeting.id),
+        page=filters.page,
+        per_page=filters.per_page,
+        max_per_page=200,
+    )
+    for meeting in pagination_result.items:
         meeting_json = {
-            "id": meeting.Meeting.id,
-            "token": meeting.Meeting.token,
-            "title": meeting.Meeting.name,
-            "date": meeting.Meeting.start_datetime.isoformat(),
-            "duration": meeting.Meeting.duration,
-            "room_name": meeting.Meeting.room_name,
-            "cost": meeting.Meeting.cost,
+            "id": meeting.id,
+            "token": meeting.token,
+            "title": meeting.name,
+            "date": meeting.start_datetime.isoformat(),
+            "duration": meeting.duration,
+            "room_name": meeting.room_name,
+            "cost": meeting.cost,
+            "owner": {"id": meeting.owner.id, "username": meeting.owner.username},
             "participants": [],
             "additional_costs": [],
         }
 
-        total_cost += meeting.Meeting.cost
+        total_cost += meeting.cost
 
-        for cost in meeting.Meeting.additional_costs.all():
+        for cost in meeting.additional_costs.all():
             meeting_json["additional_costs"].append(
                 {"id": cost.id, "name": cost.name, "cost": cost.cost}
             )
 
             total_cost += cost.cost
 
-        for participant in meeting.Meeting.users.all():
+        for participant in meeting.users.all():
             meeting_json["participants"].append(
                 {
                     "id": participant.id,
