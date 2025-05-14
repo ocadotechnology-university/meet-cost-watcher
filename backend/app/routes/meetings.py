@@ -72,15 +72,6 @@ meeting_model = api.model(
         "description": fields.String(
             description="meeting description if exists", required=True
         ),
-        "owner": fields.Nested(
-            api.model(
-                "Owner",
-                {
-                    "id": fields.Integer(description="User ID", required=True),
-                    "username": fields.String(description="Username", required=True),
-                },
-            )
-        ),
         "room_name": fields.String(description="Meeting room name", required=True),
         "cost": fields.Float(description="Meeting cost", required=True),
         "participants": fields.List(
@@ -97,6 +88,9 @@ meeting_model = api.model(
                         ),
                         "hourly_cost": fields.Float(
                             description="User hourly cost", required=True
+                        ),
+                        "is_owner": fields.Boolean(
+                            description="Is owner", required=True
                         ),
                     },
                 )
