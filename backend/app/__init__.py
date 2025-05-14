@@ -1,20 +1,17 @@
 from flask import Flask, session
-from flask_restx import Api # type: ignore
+from flask_restx import Api  # type: ignore
 from app.extensions import db
 from .routes import register_namespaces
 import os
 
 from flask_cors import CORS
-from dotenv import load_dotenv # type: ignore
+from dotenv import load_dotenv  # type: ignore
 
 load_dotenv()
-
-            
 
 
 def create_app():
     app = Flask(__name__)
-    
 
     api = Api(app, title="Meet Cost Watcher", version="1.0")
 

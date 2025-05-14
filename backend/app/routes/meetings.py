@@ -148,7 +148,7 @@ class MeetingsAll(Resource):
             filters = MeetingsFilterParser()
 
         return meetings_all_resolver(filters=filters, user=user)
-    
+
 
 @api.route("/sync")
 class MeetingSync(Resource):
@@ -173,9 +173,8 @@ class MeetingSync(Resource):
         try:
             save_meetings_from_calendar()
             return jsonify(meetings_all_resolver(filters=filters))
-        except Exception :
+        except Exception:
             abort(400)
-
 
 
 @api.route("/single/<string:token>")

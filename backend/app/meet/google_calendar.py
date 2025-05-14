@@ -14,12 +14,11 @@ from googleapiclient.discovery import build
 load_dotenv()
 credentials_str = os.getenv("CREDENTIALS")
 credentials_json = json.loads(credentials_str)
-token_path = 'token.json'
+token_path = "token.json"
 
-SCOPES = ['https://www.googleapis.com/auth/calendar.readonly']
-        
-        
-        
+SCOPES = ["https://www.googleapis.com/auth/calendar.readonly"]
+
+
 def authorize():
     creds = None
 
@@ -39,52 +38,57 @@ def authorize():
             # flow = InstalledAppFlow.from_client_secrets_file(credentails_path, SCOPES)
             flow = InstalledAppFlow.from_client_config(credentials_json, SCOPES)
             creds = flow.run_local_server(port=0)
-        
-        with open(token_path, 'w') as token:
+
+        with open(token_path, "w") as token:
             token.write(creds.to_json())
 
     print("Zautoryzowano!")
 
     return creds
 
+
 def save_meetings_from_calendar():
 
     creds = authorize()
-    service = build('calendar', 'v3', credentials=creds)
+    service = build("calendar", "v3", credentials=creds)
 
     # 100 last meetings
 
-    now = datetime.datetime.utcnow().isoformat() + 'Z'
+    now = datetime.datetime.utcnow().isoformat() + "Z"
     meeting_num = 100
 
-    print('Pobieranie wydarzeń z linkiem Google Meet...\n')
-    events_result = service.events().list(
-        calendarId='primary',
-        timeMax=now,
-        maxResults=meeting_num,
-        singleEvents=True,
-    ).execute()
+    print("Pobieranie wydarzeń z linkiem Google Meet...\n")
+    events_result = (
+        service.events()
+        .list(
+            calendarId="primary",
+            timeMax=now,
+            maxResults=meeting_num,
+            singleEvents=True,
+        )
+        .execute()
+    )
 
-    events = events_result.get('items', [])
+    events = events_result.get("items", [])
     if not events:
-        print('Brak wydarzeń z Google Meet.')
+        print("Brak wydarzeń z Google Meet.")
         return
     else:
-        print(f'Znalezionych wydarzeń: {len(events)}. Wczytywanie do bazy...\n')
-
+        print(f"Znalezionych wydarzeń: {len(events)}. Wczytywanie do bazy...\n")
 
     new_num = 0
-    
 
     for event in events:
-        hangout_link = event.get('hangoutLink')
+        hangout_link = event.get("hangoutLink")
         if hangout_link:
 
             # Google Meet
-            name = event.get('summary', 'Brak tytułu')
-            start_str = event['start'].get('dateTime', event['start'].get('date'))
-            end_str = event['end'].get('dateTime', event['end'].get('date'))
-            participants = [att['email'] for att in event.get('attendees', []) if 'email' in att]
+            name = event.get("summary", "Brak tytułu")
+            start_str = event["start"].get("dateTime", event["start"].get("date"))
+            end_str = event["end"].get("dateTime", event["end"].get("date"))
+            participants = [
+                att["email"] for att in event.get("attendees", []) if "email" in att
+            ]
 
             # Parsing
             start = datetime.datetime.fromisoformat(start_str)
@@ -93,11 +97,9 @@ def save_meetings_from_calendar():
             # Option 1: Find duplicate meetings in database
 
             existing_meeting = Meeting.query.filter_by(
-                token=hangout_link,
-                name=name,
-                start_datetime=start
-                ).first()
-            
+                token=hangout_link, name=name, start_datetime=start
+            ).first()
+
             if existing_meeting:
                 continue
 
@@ -106,9 +108,8 @@ def save_meetings_from_calendar():
             #     Meeting.start_datetime >= start,
             # ).delete()
             # db.session.commit()
-            
+
             # print(f'Załadowano ponownie')
-                
 
             # Save meeting to database
             meeting = Meeting(
@@ -116,8 +117,8 @@ def save_meetings_from_calendar():
                 token=hangout_link,
                 start_datetime=start,
                 duration=(end - start).seconds // 60,
-                room_name='Google Meet',
-                cost=0.0 
+                room_name="Google Meet",
+                cost=0.0,
             )
             new_num += 1
             print(f'+ "{name}"')
@@ -126,12 +127,15 @@ def save_meetings_from_calendar():
 
             # Save participants to database
             for participant in participants:
-                existing_participant = User.query.filter_by(username=participant).first()
+                existing_participant = User.query.filter_by(
+                    username=participant
+                ).first()
                 if not existing_participant:
-                    user = User(username=participant, role_name='unknown', hourly_cost=0.0)
+                    user = User(
+                        username=participant, role_name="unknown", hourly_cost=0.0
+                    )
                     db.session.add(user)
                     db.session.commit()
                     print(f'* Dodano użytkownika "{participant}"')
 
-
-    print(f'Dodano {new_num} spotkań. W bazie znajdują się: {len(events)-new_num}.\n')
+    print(f"Dodano {new_num} spotkań. W bazie znajdują się: {len(events)-new_num}.\n")
