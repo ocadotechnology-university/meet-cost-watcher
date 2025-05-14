@@ -15,9 +15,9 @@ meetings_sorting_model = api.model(
     "MeetingsSorting",
     {
         "field": fields.String(
-            enum=["name", "cost", "duration", "start"], description="Field to sort by"
+            enum=["name", "cost", "duration", "start"], description="Field to sort by", required=False
         ),
-        "order": fields.String(enum=["asc", "desc"], description="Sorting order"),
+        "order": fields.String(enum=["asc", "desc"], description="Sorting order", required=False),
     },
 )
 
@@ -58,30 +58,30 @@ meetings_all_input = api.model(
 meeting_model = api.model(
     "Meeting",
     {
-        "id": fields.Integer(description="Meeting ID"),
-        "token": fields.String(description="Meeting token"),
-        "title": fields.String(description="Meeting title"),
-        "date": fields.DateTime(description="Meeting start date"),
-        "duration": fields.Integer(description="Meeting duration in minutes"),
-        "description": fields.String(description="meeting description if exists"),
+        "id": fields.Integer(description="Meeting ID",required=True),
+        "token": fields.String(description="Meeting token",required=True),
+        "title": fields.String(description="Meeting title",required=True),
+        "date": fields.DateTime(description="Meeting start date",required=True),
+        "duration": fields.Integer(description="Meeting duration in minutes",required=True),
+        "description": fields.String(description="meeting description if exists",required=True),
         "owner": api.model(
             "Owner",
             {
-                "id": fields.Integer(description="User ID"),
-                "username": fields.String(description="Username"),
+                "id": fields.Integer(description="User ID",required=True),
+                "username": fields.String(description="Username",required=True),
             },
         ),
-        "room_name": fields.String(description="Meeting room name"),
-        "cost": fields.Float(description="Meeting cost"),
+        "room_name": fields.String(description="Meeting room name",required=True),
+        "cost": fields.Float(description="Meeting cost",required=True),
         "participants": fields.List(
             fields.Nested(
                 api.model(
                     "Participant",
                     {
-                        "id": fields.Integer(description="User ID"),
-                        "username": fields.String(description="Username"),
-                        "role_name": fields.String(description="User role"),
-                        "hourly_cost": fields.Float(description="User hourly cost"),
+                        "id": fields.Integer(description="User ID",required=True),
+                        "username": fields.String(description="Username",required=True),
+                        "role_name": fields.String(description="User role",required=True),
+                        "hourly_cost": fields.Float(description="User hourly cost",required=True),
                     },
                 )
             )
@@ -91,9 +91,9 @@ meeting_model = api.model(
                 api.model(
                     "AdditionalCost",
                     {
-                        "id": fields.Integer(description="Additional cost ID"),
-                        "name": fields.String(description="Cost name"),
-                        "cost": fields.Float(description="Cost amount"),
+                        "id": fields.Integer(description="Additional cost ID",required=True),
+                        "name": fields.String(description="Cost name",required=True),
+                        "cost": fields.Float(description="Cost amount",required=True),
                     },
                 )
             )
@@ -105,7 +105,7 @@ meeting_model = api.model(
 meetings_all_output = api.model(
     "MeetingsResponse",
     {
-        "total_cost": fields.Float(description="Total cost of all meetings"),
+        "total_cost": fields.Float(description="Total cost of all meetings",required=True),
         "meetings": fields.List(fields.Nested(meeting_model)),
     },
 )

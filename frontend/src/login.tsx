@@ -22,6 +22,10 @@ const LoginPage: React.FC = () => {
   const handleLogin = async () => {
     try {
       const credentials = btoa(`${login}:${password}`);
+      const bodyData = {
+        per_page: 15,
+        page: 1
+      }
   
       const response = await fetch(backendURL+"/meetings/all", {
         method: "POST",
@@ -29,7 +33,7 @@ const LoginPage: React.FC = () => {
           "Content-Type": "application/json",
           "Authorization": `Basic ${credentials}`, 
         },
-        body: JSON.stringify({})
+        body: JSON.stringify(bodyData)
       });
 
       const data: MeetingResponse = await response.json();
