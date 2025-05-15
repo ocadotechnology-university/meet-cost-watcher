@@ -67,8 +67,8 @@ export const MeetingFilters = ({visible,onClose,onSearch,initialParticipants,onL
                 break;
         }
 
-        const startMin = startDate && startTime ? `${startDate}T${startTime}:00` : '';
-        const startMax = endDate && endTime ? `${endDate}T${endTime}:00` : '';
+        // const startMin = startDate && startTime ? `${startDate}T${startTime}:00` : '';
+        // const startMax = endDate && endTime ? `${endDate}T${endTime}:00` : '';
 
         const request: MeetingRequest = {
             per_page: 20,
@@ -279,10 +279,6 @@ export const MeetingFilters = ({visible,onClose,onSearch,initialParticipants,onL
                     <FontAwesomeIcon icon={faAngleDown} className={`transition-transform ${userMenuOpen ? 'transform rotate-180' : ''}`}/>
                         {userMenuOpen && (
                             <div className="absolute bottom-full left-0 right-0 bg-white shadow-lg rounded-md p-2 mb-2 z-10">
-                                {/*<button className="w-full text-left p-2 hover:bg-gray-100 rounded flex items-center gap-2">*/}
-                                {/*    <FontAwesomeIcon icon={faUserCog} />*/}
-                                {/*    Ustawienia konta*/}
-                                {/*</button>*/}
                                 <button className="w-full text-left p-2 hover:bg-gray-100 rounded flex items-center gap-2"
                                 onClick={() => {
                                     setUserMenuOpen(false);

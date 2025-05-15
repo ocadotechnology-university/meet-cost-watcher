@@ -173,8 +173,6 @@ export const MeetingDetails = ({ meeting }: { meeting: Meeting }) => {
                                     {cost.cost.toFixed(2)} zł
                                     <FontAwesomeIcon icon={faEllipsisV} className="text-black align-right pl-4 cursor-pointer" onClick={() => setEditingCost(cost)}/>
                                 </span>
-
-
                             </li>
                         ))}
                         {!additionalCosts.length && (
