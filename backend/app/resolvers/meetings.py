@@ -88,26 +88,67 @@ def meetings_all_resolver(user: User, filters: Optional[MeetingsFilters] = None)
             if value is None:
                 continue
 
+# ---- TODO: Hotfix between comments, repair later!
+
+
+            if name == "name" and value != None:
+                query = query.filter(Meeting.name.ilike(f"%{value}%"))
+                continue
+
+            if name == "duration_min" and value != None:
+                query = query.filter(Meeting.duration >= value)
+                cost_query = cost_query.filter(Meeting.duration >= value)
+                continue
+
+            if name == "duration_max" and value != None:
+                query = query.filter(Meeting.duration <= value)
+                cost_query = cost_query.filter(Meeting.duration <= value)
+                continue
+
+            if name == "cost_min" and value != None:
+                query = query.filter(Meeting.cost >= value)
+                cost_query = cost_query.filter(Meeting.cost >= value)
+                continue
+
+            if name == "cost_max" and value != None:
+                query = query.filter(Meeting.cost <= value)
+                cost_query = cost_query.filter(Meeting.cost <= value)
+                continue
+
+            if name == "start_min" and value != None:
+                query = query.filter(Meeting.start_datetime >= value)
+                cost_query = cost_query.filter(Meeting.start_datetime >= value)
+                continue
+
+            if name == "start_max" and value != None:
+                query = query.filter(Meeting.start_datetime <= value)
+                cost_query = cost_query.filter(Meeting.start_datetime <= value)
+                continue
+
+
+# -------------------------------------------------
+
+
             if name == "participant_ids":
                 query = query.filter(meeting_users.c.user_id.in_(value))
                 cost_query = cost_query.filter(meeting_users.c.user_id.in_(value))
                 continue
 
-            column = getattr(
-                Meeting, name.replace("_min", "").replace("_max", ""), None
-            )
-            if column is None:
-                continue
-
-            if "_min" in name:
-                cost_query = cost_query.filter(meeting_users.c.user_id.in_(value))
-                query = query.filter(column >= value)
-            elif "_max" in name:
-                query = query.filter(column <= value)
-                cost_query = cost_query.filter(column <= value)
-            else:
-                query = query.filter(column=value)
-                cost_query = cost_query.filter(column <= value)
+            # column = getattr(
+            #     Meeting, name.replace("_min", "").replace("_max", ""), None
+            # )
+            # if column is None:
+            #     continue
+            #
+            # if "_min" in name:
+            #     cost_query = cost_query.filter(meeting_users.c.user_id.in_(value))
+            #     query = query.filter(column >= value)
+            # elif "_max" in name:
+            #     query = query.filter(column <= value)
+            #     cost_query = cost_query.filter(column <= value)
+            # else:
+            #     query = query.filter(column=value)
+            #     cost_query = cost_query.filter(column <= value)
 
         if sort := filters.sort_by:
             column = getattr(Meeting, sort.field)
