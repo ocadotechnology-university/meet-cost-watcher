@@ -25,15 +25,15 @@ export interface SortData {
 export interface MeetingRequest {
     per_page: number;
     page: number;
-    name: string|null;
-    duration_min: number|null;
-    duration_max: number|null;
-    cost_min:number|null;
-    cost_max:number|null;
-    // participants_ids:number[]|null;
-    // start_min: string|null;
-    // start_max: string|null;
-    sort_by: SortData;
+    name?: string|null;
+    duration_min?: number|null;
+    duration_max?: number|null;
+    cost_min?:number|null;
+    cost_max?:number|null;
+    participants_ids?:number[]|null;
+    start_min?: string|null;
+    start_max?: string|null;
+    sort_by?: SortData;
 }
 
 export interface Meeting {

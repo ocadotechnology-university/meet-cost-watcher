@@ -113,6 +113,7 @@ export default function MultipleMeetingsPage(){
     }
   };
 
+  // @ts-ignore
   useContainerScroll(listContainerRef, fetchMeetings(currentRequest,false), isFetching);
 
 
@@ -195,7 +196,7 @@ export default function MultipleMeetingsPage(){
         visible = {filterVisibility}
         onClose={() => setFilterVisibility(false)}
         onSearch={handleSearch}
-        initialParticipants={getUniqueParticipants(meetingsList)}
+        initialParticipants={getUniqueParticipants(meetingsData.value.meetings)}
         onLogout={handleLogout}/>
 
 

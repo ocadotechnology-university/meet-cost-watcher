@@ -1,8 +1,9 @@
 import {MeetingRequest, Participant} from "../types/responseTypes.ts";
-import React, {useEffect, useState} from "react";
+// @ts-ignore
+import React, {useState} from "react";
 import Slider from "rc-slider";
 import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
-import {faAngleDown, faPlus, faSignOutAlt, faTimes, faUserCog} from "@fortawesome/free-solid-svg-icons";
+import {faAngleDown, faSignOutAlt, faTimes} from "@fortawesome/free-solid-svg-icons";
 import "../style.css";
 interface MeetingFiltersProperties {
     visible: boolean;
@@ -120,7 +121,10 @@ export const MeetingFilters = ({visible,onClose,onSearch,initialParticipants,onL
 
         if(!visible) return null;
 
-        return (
+        // @ts-ignore
+    // @ts-ignore
+    // @ts-ignore
+    return (
             <div
                 className="w-1/6 min-h-screen bg-white float-left pt-4 rounded-r-2xl shadow p-4 border border-gray-200 flex flex-col gap-3"
                 onDoubleClick={onClose}
@@ -260,11 +264,11 @@ export const MeetingFilters = ({visible,onClose,onSearch,initialParticipants,onL
                     </button>
                 </div>
 
-                <div className="absolute p-0 m-0 left-0 bottom-6 w-1/6">
+                <div className="absolute p-0 m-0 left-0 bottom-6 align-middle w-1/6">
                     <hr className="gray-line" />
                     {/*<div className=" align-middle gap-2 text-sm text-gray-600 w-full pl-5 pt-3">*/}
                         <div
-                            className="flex items-center gap-2 text-sm text-gray-600 w-full py-3 cursor-pointer relative"
+                            className="align-middle items-center gap-2 text-sm text-gray-600 w-full pl-5 pt-3"
                             onClick={() => setUserMenuOpen(!userMenuOpen)}
                         >
                         <div className="bg-gray-900 text-white w-10 h-10 rounded-full float-left flex items-center justify-center text-2xl">{initLetter}</div>

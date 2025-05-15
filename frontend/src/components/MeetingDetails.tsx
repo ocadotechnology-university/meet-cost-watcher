@@ -1,26 +1,78 @@
-import {Meeting} from "../types/responseTypes.ts";
+import {AdditionalCost, Meeting} from "../types/responseTypes.ts";
 import dolar from "../assets/dolar.png";
 import people from "../assets/people.png";
 import clock from "../assets/clock.png";
 import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
 import {
     faCalendarDays,
-    faClock,
-    faEllipsisV,
+    faClock, faEllipsisV,
     faLink,
     faLocationDot,
     faPlusCircle
 } from "@fortawesome/free-solid-svg-icons";
-import React from "react";
+// @ts-ignore
+import React, {useState} from "react";
 import {formatDate, getTimeRange} from "../utils/formatFunctions.ts";
+import {EditCostModal} from "./AdditionalCostsModal.tsx";
+const backendURL = "http://127.0.0.1:5000";
 
-interface MeetingDetailsProperties {
-    meeting: Meeting;
-}
 
-export const MeetingDetails = ({meeting}: MeetingDetailsProperties) => {
+export const MeetingDetails = ({ meeting }: { meeting: Meeting }) => {
+    const [editingCost, setEditingCost] = useState<AdditionalCost | null>(null);
+    const [isAddModalOpen, setIsAddModalOpen] = useState(false);
+    const [additionalCosts, setAdditionalCosts] = useState(meeting.additional_costs);
+    // TODO: Solve issue with BE team
+    const handleSaveCost = async (name:string, cost:number) => {
+        try {
+            const credentials = localStorage.getItem('credentials');
+
+            const method = editingCost ? 'PUT' : 'POST';
+
+            const response = await fetch(backendURL+"/costs/", {
+                method,
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Basic ${credentials}`
+                },
+                body: JSON.stringify({id: meeting.id , name:name, cost:cost})
+            });
+
+            const updatedCost = await response.json();
+
+            if (editingCost) {
+                setAdditionalCosts(prev => prev.map(c =>
+                    c.id === editingCost.id ? updatedCost : c
+                ));
+            } else {
+                setAdditionalCosts(prev => [...prev, updatedCost]);
+            }
+
+            setEditingCost(null);
+            setIsAddModalOpen(false);
+        } catch (error) {
+            console.error('Error saving cost:', error);
+        }
+    };
+
+    const handleDeleteCost = async (costId: number) => {
+        try {
+            const credentials = localStorage.getItem('credentials');
+            await fetch(backendURL+"/costs/", {
+                method: 'DELETE',
+                headers: {
+                    'Authorization': `Basic ${credentials}`
+                }
+            });
+
+            setAdditionalCosts(prev => prev.filter(c => c.id !== costId));
+            setEditingCost(null);
+        } catch (error) {
+            console.error('Error deleting cost:', error);
+        }
+    };
+
     const owner = meeting.participants.find(p => p.is_owner);
-
+    const canEdit = true;
     return(
         <div className="col-span-3 grid grid-cols-3 auto-rows-min gap-y-4 gap-x-4 white-shadow-bordered-div h-full items-start ">
             <div className="col-span-3 h-fit" >
@@ -97,18 +149,61 @@ export const MeetingDetails = ({meeting}: MeetingDetailsProperties) => {
             {/* Additional Cost Section */}
             <div className="white-shadow-bordered-div h-[52vh] flex flex-col">
                 <h2 className="text-lg font-semibold mb-2 text-blue-main">Dodatkowe koszty
-                    <FontAwesomeIcon icon={faPlusCircle} className="float-end text-white bg-black border-black border-2 rounded-full ml-4 cursor-pointer" onClick={()=>void 0}/>
+                    {canEdit && (
+                        <button
+                            onClick={() => {
+                                setEditingCost(null);
+                                setIsAddModalOpen(true);
+                            }}
+                            className="float-end text-white bg-blue-500 border-blue-500 border-2 rounded-full ml-4 cursor-pointer w-6 h-6 flex items-center justify-center"
+
+                        >
+                            <FontAwesomeIcon icon={faPlusCircle} className=" text-white bg-black border-black border-2 rounded-full  cursor-pointer" />
+                        </button>
+                    )}
+                    {/*<FontAwesomeIcon icon={faPlusCircle} className="float-end text-white bg-black border-black border-2 rounded-full ml-4 cursor-pointer" onClick={()=>void 0}/>*/}
                 </h2>
                 <hr className="gray-line mx-2" />
                 <div className="overflow-y-auto">
                     <ul className="space-y-3 pt-3">
                         {meeting.additional_costs.map((cost) => (
-                            <li key={cost.id} className="flex justify-between">{cost.name} <span className="text-custom-teal">{cost.cost.toFixed(2)} zł<FontAwesomeIcon icon={faEllipsisV} className="text-black pl-4 cursor-pointer" onClick={()=>void 0}/></span></li>
+                            <li key={cost.id} className="flex justify-between">{cost.name}
+                                {/*<div>*/}
+                                <span className="text-custom-teal">
+                                    {cost.cost.toFixed(2)} zł
+                                    <FontAwesomeIcon icon={faEllipsisV} className="text-black align-right pl-4 cursor-pointer" onClick={() => setEditingCost(cost)}/>
+                                </span>
+
+
+                            </li>
                         ))}
+                        {!additionalCosts.length && (
+                            <li className="text-center text-gray-500 py-4">
+                                Brak dodatkowych kosztów
+                            </li>
+                        )}
                     </ul>
                 </div>
             </div>
+            {isAddModalOpen && (
+                <EditCostModal
+                    onSave={handleSaveCost}
+                    onClose={() => setIsAddModalOpen(false)}
+                    canEdit={canEdit}
+                />
+            )}
+
+            {editingCost && (
+                <EditCostModal
+                    cost={editingCost}
+                    onSave={handleSaveCost}
+                    onClose={() => setEditingCost(null)}
+                    onDelete={() => handleDeleteCost(editingCost.id)}
+                    canEdit={canEdit}
+                />
+            )}
         </div>
+
     )};
 
 export default MeetingDetails;
