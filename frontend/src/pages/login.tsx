@@ -1,12 +1,12 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import logo from './assets/logo.png'
-import login_background from './assets/login_background.jpg'
-import eye from './assets/eye.png'
+import logo from '../assets/logo.png'
+import login_background from '../assets/login_background.jpg'
+import eye from '../assets/eye.png'
 import { useContext } from "react";
-import { LoginContext } from "./context/LoginContext";
-import {MeetingResponse} from "./types/responseTypes.ts";
-import "./style2.css";
+import { LoginContext } from "../context/LoginContext.tsx";
+import {MeetingResponse} from "../types/responseTypes.ts";
+import "../style2.css";
 
 const LoginPage: React.FC = () => {
   const [passwordVisible, setPasswordVisible] = useState(false);
@@ -23,10 +23,10 @@ const LoginPage: React.FC = () => {
     try {
       const credentials = btoa(`${login}:${password}`);
       const bodyData = {
-        per_page: 15,
+        per_page: 50,
         page: 1
       }
-  
+      console.log(credentials);
       const response = await fetch(backendURL+"/meetings/all", {
         method: "POST",
         headers: {
@@ -42,6 +42,8 @@ const LoginPage: React.FC = () => {
       if (response.status === 401) {
         setLoginError(true); 
       } else if (response.status === 200) {
+        localStorage.setItem('credentials',credentials);
+        localStorage.setItem('username', login);
         navigate("/multiple_meetings", {state: data});
       }
     } catch (error) {

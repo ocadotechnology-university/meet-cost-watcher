@@ -41,10 +41,10 @@ additional_cost_output = api.model(
     {
         "status": fields.String(
             enum=["success", "error"],
-            description="Indicates the status of response",required=True
+            description="Indicates the status of response", required=True
         ),
         "content": fields.String(
-            description="Empty if success",required=True
+            description="Empty if success", required=True
         ),
     },
 )
@@ -54,10 +54,10 @@ additional_cost_output1 = api.model(
     {
         "status": fields.String(
             enum=["success", "error"],
-            description="Indicates the status of response",required=True
+            description="Indicates the status of response", required=True
         ),
         "content": fields.Integer(
-            description="id of added additional cost",required=True
+            description="id of added additional cost", required=True
         ),
     },
 )
