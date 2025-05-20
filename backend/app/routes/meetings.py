@@ -64,12 +64,14 @@ meeting_model = api.model(
         "date": fields.DateTime(description="Meeting start date"),
         "duration": fields.Integer(description="Meeting duration in minutes"),
         "description": fields.String(description="meeting description if exists"),
-        "owner": api.model(
-            "Owner",
-            {
-                "id": fields.Integer(description="User ID"),
-                "username": fields.String(description="Username"),
-            },
+        "owner": fields.Nested(
+            api.model(
+                "Owner",
+                {
+                    "id": fields.Integer(description="User ID"),
+                    "username": fields.String(description="Username"),
+                },
+            )
         ),
         "room_name": fields.String(description="Meeting room name"),
         "cost": fields.Float(description="Meeting cost"),
