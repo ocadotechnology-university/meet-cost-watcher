@@ -1,11 +1,12 @@
 from app.types import CreateUserInput, UpdateUserInput
-from app.models import User, AppRoles
+from app.models import User, AppRoles, meeting_users
 from app.extensions import db
 from .common import jsonify_return
 
 
 @jsonify_return
 def create_user_resolver(input: CreateUserInput, current_user: User) -> str:
+
     if current_user.app_role != AppRoles.ADMIN:
         raise Exception("Only admins can create users")
 
@@ -41,6 +42,7 @@ def get_users_resolver(current_user: User) -> list:
 
 @jsonify_return
 def update_user_resolver(input: UpdateUserInput, current_user: User) -> str:
+
     if current_user.app_role != AppRoles.ADMIN:
         raise Exception("Only admins can update users")
 
@@ -63,11 +65,19 @@ def update_user_resolver(input: UpdateUserInput, current_user: User) -> str:
 
 @jsonify_return
 def delete_user_resolver(user_id: int, current_user: User) -> str:
+
     if current_user.app_role != AppRoles.ADMIN:
         raise Exception("Only admins can delete users")
 
+    if current_user.id == user_id:
+        raise Exception("Cannot delete oneself")
+
     user = User.query.get_or_404(user_id)
     username = user.username
+
+    db.session.execute(meeting_users.delete().where(meeting_users.c.user_id == user_id))
+
     db.session.delete(user)
     db.session.commit()
+
     return f"User {username} deleted successfully"
