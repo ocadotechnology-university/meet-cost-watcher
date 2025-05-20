@@ -48,15 +48,15 @@ def update_user_resolver(input: UpdateUserInput, current_user: User) -> str:
 
     user = User.query.get_or_404(input.id)
 
-    if input.username is not None:
+    if input.username:
         user.username = input.username
-    if input.password is not None:
+    if input.password:
         user.hash_password(input.password)
-    if input.role_name is not None:
+    if input.role_name:
         user.role_name = input.role_name
-    if input.hourly_cost is not None:
+    if input.hourly_cost:
         user.hourly_cost = input.hourly_cost
-    if input.app_role is not None:
+    if input.app_role:
         user.app_role = AppRoles(input.app_role)
 
     db.session.commit()
