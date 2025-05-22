@@ -19,6 +19,7 @@
   }
 }
 @theme {
+  --color-custom-grey: #f6f6f6;
   --color-blue-main: #283593;
   --color-custom-teal: #17CADE;
 }

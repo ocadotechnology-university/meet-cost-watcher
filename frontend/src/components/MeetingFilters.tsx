@@ -3,17 +3,15 @@ import {MeetingRequest, Participant} from "../types/responseTypes.ts";
 import React, {useState} from "react";
 import Slider from "rc-slider";
 import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
-import {faAngleDown, faSignOutAlt, faTimes} from "@fortawesome/free-solid-svg-icons";
+import {faAngleDown, faSignOutAlt} from "@fortawesome/free-solid-svg-icons";
 import "../style.css";
 interface MeetingFiltersProperties {
-    visible: boolean;
-    onClose: () => void;
     onSearch: (request: MeetingRequest) => void;
     onLogout: () => void;
     initialParticipants: Participant[];
 }
 
-export const MeetingFilters = ({visible,onClose,onSearch,initialParticipants,onLogout}: MeetingFiltersProperties) => {
+export const MeetingFilters = ({onSearch,initialParticipants,onLogout}: MeetingFiltersProperties) => {
     const [durationRange, setDurationRange] = useState<[number,number]>([0,300]);
     const [costRange, setCostRange] = useState<[number, number]>([0, 5000]);
     const [searchTerm, setSearchTerm] = useState('');
@@ -67,8 +65,8 @@ export const MeetingFilters = ({visible,onClose,onSearch,initialParticipants,onL
                 break;
         }
 
-        // const startMin = startDate && startTime ? `${startDate}T${startTime}:00` : '';
-        // const startMax = endDate && endTime ? `${endDate}T${endTime}:00` : '';
+        // const startMin = startDate && startTime ? `${startDate}T${startTime}:00.000Z` : '';
+        // const startMax = endDate && endTime ? `${endDate}T${endTime}:00.000Z` : '';
 
         const request: MeetingRequest = {
             per_page: 20,
@@ -119,24 +117,13 @@ export const MeetingFilters = ({visible,onClose,onSearch,initialParticipants,onL
             }
         };
 
-        if(!visible) return null;
 
-        // @ts-ignore
-    // @ts-ignore
-    // @ts-ignore
     return (
             <div
                 className="w-1/6 min-h-screen bg-white float-left pt-4 rounded-r-2xl shadow p-4 border border-gray-200 flex flex-col gap-3"
-                onDoubleClick={onClose}
             >
-                <div className="flex justify-between items-center">
+                <div className="flex justify-center items-center">
                     <h2 className="font-bold text-[1.5em] text-blue-900">WYSZUKAJ SPOTKANIA</h2>
-                    <button
-                        onClick={onClose}
-                        className="md:hidden text-gray-500 hover:text-gray-700"
-                    >
-                        <FontAwesomeIcon icon={faTimes} />
-                    </button>
                 </div>
 
                 <input
@@ -179,7 +166,7 @@ export const MeetingFilters = ({visible,onClose,onSearch,initialParticipants,onL
                         min={0}
                         max={300}
                         value={durationRange}
-                        onChange={(value: number[]) => setDurationRange(value as [number, number])}
+                        onChange={(value: number | number[]) => setDurationRange(value as [number, number])}
                     />
                 </div>
 
@@ -192,7 +179,7 @@ export const MeetingFilters = ({visible,onClose,onSearch,initialParticipants,onL
                         min={0}
                         max={5000}
                         value={costRange}
-                        onChange={(value: number[]) => setCostRange(value as [number, number])}
+                        onChange={(value: number | number[]) => setCostRange(value as [number,number])}
                     />
                 </div>
                 <div>
@@ -271,20 +258,21 @@ export const MeetingFilters = ({visible,onClose,onSearch,initialParticipants,onL
                             className="align-middle items-center gap-2 text-sm text-gray-600 w-full pl-5 pt-3"
                             onClick={() => setUserMenuOpen(!userMenuOpen)}
                         >
-                        <div className="bg-gray-900 text-white w-10 h-10 rounded-full float-left flex items-center justify-center text-2xl">{initLetter}</div>
-                        <span className="float-left ml-2">
-                <p className=" font-bold">{username}</p>
-                <p className="text-gray-500 text-xs">Zalogowano</p>
-              </span>
-                    <FontAwesomeIcon icon={faAngleDown} className={`transition-transform ${userMenuOpen ? 'transform rotate-180' : ''}`}/>
+                            <div className="flex justify-center">
+                                <div className="bg-gray-900 text-white w-10 h-10 rounded-full float-left flex items-center justify-center text-2xl">{initLetter}</div>
+                                    <span className="float-left ml-2">
+                                        <p className=" font-bold">{username}</p>
+                                        <p className="text-gray-500 text-xs">Zalogowano</p>
+                                    </span>
+                                <FontAwesomeIcon icon={faAngleDown} className={`p-2 text-2xl transition-transform ${userMenuOpen ? 'transform rotate-180' : ''}`}/>
+                            </div>
                         {userMenuOpen && (
-                            <div className="absolute bottom-full left-0 right-0 bg-white shadow-lg rounded-md p-2 mb-2 z-10">
+                            <div className="absolute bottom-full left-0 right-0 bg-blue-100 shadow-lg rounded-md p-2 mb-2 z-10">
                                 <button className="w-full text-left p-2 hover:bg-gray-100 rounded flex items-center gap-2"
                                 onClick={() => {
                                     setUserMenuOpen(false);
                                     onLogout();
-                                }}
-                                >
+                                }} >
                                     <FontAwesomeIcon icon={faSignOutAlt}/>
                                     Wyloguj się
                                 </button>

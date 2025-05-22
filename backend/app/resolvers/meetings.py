@@ -129,7 +129,7 @@ def meetings_all_resolver(user: User, filters: Optional[MeetingsFilters] = None)
 # -------------------------------------------------
 
 
-            if name == "participant_ids":
+            if name == "participant_ids" and value != None:
                 query = query.filter(meeting_users.c.user_id.in_(value))
                 cost_query = cost_query.filter(meeting_users.c.user_id.in_(value))
                 continue

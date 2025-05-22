@@ -14,61 +14,38 @@ import {
 import React, {useState} from "react";
 import {formatDate, getTimeRange} from "../utils/formatFunctions.ts";
 import {EditCostModal} from "./AdditionalCostsModal.tsx";
-const backendURL = "http://127.0.0.1:5000";
 
+type MeetingDetailsProperties = {
+    meeting:Meeting;
+    onNewCost:(meetingId: number, name: string, cost: number) => Promise<void>;
+    onEditCost:(name: string, cost: number, id?: number) => Promise<void>;
+    onDeleteCost:(id:number) => Promise<void>;
+    refreshMeeting:() => void;
+};
 
-export const MeetingDetails = ({ meeting }: { meeting: Meeting }) => {
+export const MeetingDetails: React.FC<MeetingDetailsProperties> = ({ meeting, onNewCost,onEditCost,onDeleteCost,refreshMeeting }) => {
     const [editingCost, setEditingCost] = useState<AdditionalCost | null>(null);
     const [isAddModalOpen, setIsAddModalOpen] = useState(false);
-    const [additionalCosts, setAdditionalCosts] = useState(meeting.additional_costs);
-    // TODO: Solve issue with BE team
-    const handleSaveCost = async (name:string, cost:number) => {
-        try {
-            const credentials = localStorage.getItem('credentials');
 
-            const method = editingCost ? 'PUT' : 'POST';
+    const handleNewCost = async (name:string, cost:number) => {
+        await onNewCost(meeting.id,name,cost);
+        await refreshMeeting();
+        setEditingCost(null);
+        setIsAddModalOpen(false);
+    }
 
-            const response = await fetch(backendURL+"/costs/", {
-                method,
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': `Basic ${credentials}`
-                },
-                body: JSON.stringify({id: meeting.id , name:name, cost:cost})
-            });
-
-            const updatedCost = await response.json();
-
-            if (editingCost) {
-                setAdditionalCosts(prev => prev.map(c =>
-                    c.id === editingCost.id ? updatedCost : c
-                ));
-            } else {
-                setAdditionalCosts(prev => [...prev, updatedCost]);
-            }
-
+    const handleEditCost = async (name:string, cost:number ,id?: number) => {
+            await onEditCost(name,cost,id);
+            await refreshMeeting();
             setEditingCost(null);
             setIsAddModalOpen(false);
-        } catch (error) {
-            console.error('Error saving cost:', error);
-        }
     };
 
     const handleDeleteCost = async (costId: number) => {
-        try {
-            const credentials = localStorage.getItem('credentials');
-            await fetch(backendURL+"/costs/", {
-                method: 'DELETE',
-                headers: {
-                    'Authorization': `Basic ${credentials}`
-                }
-            });
-
-            setAdditionalCosts(prev => prev.filter(c => c.id !== costId));
+            await onDeleteCost(costId);
+            await refreshMeeting();
             setEditingCost(null);
-        } catch (error) {
-            console.error('Error deleting cost:', error);
-        }
+            setIsAddModalOpen(false);
     };
 
     const owner = meeting.participants.find(p => p.is_owner);
@@ -128,7 +105,7 @@ export const MeetingDetails = ({ meeting }: { meeting: Meeting }) => {
                                 <div className="bg-gray-900 text-white h-[2em] aspect-square rounded-full float-left flex items-center justify-center text-2xl">{owner.username.charAt(0).toUpperCase()}</div>
                                 <span><b>{owner.username}</b><p className="text-sm text-gray-500">{owner.role_name}</p></span>
                             </div>
-                            <span className="text-custom-teal">{owner.hourly_cost}</span>
+                            <span className="text-custom-teal">{owner.hourly_cost.toFixed(2)} zł/h</span>
                         </li>
                         )}
                         <hr className="gray-line mx-2" />
@@ -156,26 +133,23 @@ export const MeetingDetails = ({ meeting }: { meeting: Meeting }) => {
                                 setIsAddModalOpen(true);
                             }}
                             className="float-end text-white bg-blue-500 border-blue-500 border-2 rounded-full ml-4 cursor-pointer w-6 h-6 flex items-center justify-center"
-
                         >
                             <FontAwesomeIcon icon={faPlusCircle} className=" text-white bg-black border-black border-2 rounded-full  cursor-pointer" />
                         </button>
                     )}
-                    {/*<FontAwesomeIcon icon={faPlusCircle} className="float-end text-white bg-black border-black border-2 rounded-full ml-4 cursor-pointer" onClick={()=>void 0}/>*/}
                 </h2>
                 <hr className="gray-line mx-2" />
                 <div className="overflow-y-auto">
                     <ul className="space-y-3 pt-3">
                         {meeting.additional_costs.map((cost) => (
                             <li key={cost.id} className="flex justify-between">{cost.name}
-                                {/*<div>*/}
                                 <span className="text-custom-teal">
                                     {cost.cost.toFixed(2)} zł
                                     <FontAwesomeIcon icon={faEllipsisV} className="text-black align-right pl-4 cursor-pointer" onClick={() => setEditingCost(cost)}/>
                                 </span>
                             </li>
                         ))}
-                        {!additionalCosts.length && (
+                        {!meeting.additional_costs.length && (
                             <li className="text-center text-gray-500 py-4">
                                 Brak dodatkowych kosztów
                             </li>
@@ -185,23 +159,20 @@ export const MeetingDetails = ({ meeting }: { meeting: Meeting }) => {
             </div>
             {isAddModalOpen && (
                 <EditCostModal
-                    onSave={handleSaveCost}
+                    onSave={handleNewCost}
                     onClose={() => setIsAddModalOpen(false)}
                     canEdit={canEdit}
                 />
             )}
-
             {editingCost && (
                 <EditCostModal
                     cost={editingCost}
-                    onSave={handleSaveCost}
+                    onSave={handleEditCost}
                     onClose={() => setEditingCost(null)}
                     onDelete={() => handleDeleteCost(editingCost.id)}
                     canEdit={canEdit}
                 />
             )}
         </div>
-
     )};
-
 export default MeetingDetails;
