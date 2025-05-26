@@ -90,7 +90,6 @@ def meetings_all_resolver(user: User, filters: Optional[MeetingsFilters] = None)
 
 # ---- TODO: Hotfix between comments, repair later!
 
-
             if name == "name" and value != None:
                 query = query.filter(Meeting.name.ilike(f"%{value}%"))
                 continue
@@ -124,12 +123,8 @@ def meetings_all_resolver(user: User, filters: Optional[MeetingsFilters] = None)
                 query = query.filter(Meeting.start_datetime <= value)
                 cost_query = cost_query.filter(Meeting.start_datetime <= value)
                 continue
-
-
 # -------------------------------------------------
-
-
-            if name == "participant_ids":
+            if name == "participant_ids" and value != None:
                 query = query.filter(meeting_users.c.user_id.in_(value))
                 cost_query = cost_query.filter(meeting_users.c.user_id.in_(value))
                 continue
