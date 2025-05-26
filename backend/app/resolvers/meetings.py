@@ -6,6 +6,11 @@ from app.types import MeetingsFilters, SortingOrder
 from sqlalchemy import asc, desc
 from .common import jsonify_return
 from sqlalchemy import func
+from datetime import timezone
+
+
+def helper(query):
+    print(len(db.session.execute(query).scalars().all()))
 
 
 @jsonify_return
@@ -26,7 +31,7 @@ def meetings_single_resolver(token: str):
         "id": meeting.id,
         "token": meeting.token,
         "title": meeting.name,
-        "date": meeting.start_datetime.isoformat(),
+        "date": meeting.start_datetime.astimezone(timezone.utc).isoformat(),
         "duration": meeting.duration,
         "room_name": meeting.room_name,
         "cost": meeting.cost,
@@ -85,65 +90,38 @@ def meetings_all_resolver(user: User, filters: Optional[MeetingsFilters] = None)
     if filters:
         for name, value in filters.__dict__.items():
 
-            if value is None:
+            if value is None or value == "":
                 continue
-
-# ---- TODO: Hotfix between comments, repair later!
-
-            if name == "name" and value != None:
+            if name == "name":
                 query = query.filter(Meeting.name.ilike(f"%{value}%"))
-                continue
 
-            if name == "duration_min" and value != None:
+            if name == "duration_min":
                 query = query.filter(Meeting.duration >= value)
                 cost_query = cost_query.filter(Meeting.duration >= value)
-                continue
 
-            if name == "duration_max" and value != None:
+            if name == "duration_max":
                 query = query.filter(Meeting.duration <= value)
                 cost_query = cost_query.filter(Meeting.duration <= value)
-                continue
 
-            if name == "cost_min" and value != None:
+            if name == "cost_min":
                 query = query.filter(Meeting.cost >= value)
                 cost_query = cost_query.filter(Meeting.cost >= value)
-                continue
 
-            if name == "cost_max" and value != None:
+            if name == "cost_max":
                 query = query.filter(Meeting.cost <= value)
                 cost_query = cost_query.filter(Meeting.cost <= value)
-                continue
 
-            if name == "start_min" and value != None:
+            if name == "start_min":
                 query = query.filter(Meeting.start_datetime >= value)
                 cost_query = cost_query.filter(Meeting.start_datetime >= value)
-                continue
 
-            if name == "start_max" and value != None:
+            if name == "start_max":
                 query = query.filter(Meeting.start_datetime <= value)
                 cost_query = cost_query.filter(Meeting.start_datetime <= value)
-                continue
-# -------------------------------------------------
-            if name == "participant_ids" and value != None:
+
+            if name == "participant_ids":
                 query = query.filter(meeting_users.c.user_id.in_(value))
                 cost_query = cost_query.filter(meeting_users.c.user_id.in_(value))
-                continue
-
-            # column = getattr(
-            #     Meeting, name.replace("_min", "").replace("_max", ""), None
-            # )
-            # if column is None:
-            #     continue
-            #
-            # if "_min" in name:
-            #     cost_query = cost_query.filter(meeting_users.c.user_id.in_(value))
-            #     query = query.filter(column >= value)
-            # elif "_max" in name:
-            #     query = query.filter(column <= value)
-            #     cost_query = cost_query.filter(column <= value)
-            # else:
-            #     query = query.filter(column=value)
-            #     cost_query = cost_query.filter(column <= value)
 
         if sort := filters.sort_by:
             column = getattr(Meeting, sort.field)
@@ -168,7 +146,7 @@ def meetings_all_resolver(user: User, filters: Optional[MeetingsFilters] = None)
             "id": meeting.id,
             "token": meeting.token,
             "title": meeting.name,
-            "date": meeting.start_datetime.isoformat(),
+            "date": meeting.start_datetime.astimezone(timezone.utc).isoformat(),
             "description": meeting.description,
             "duration": meeting.duration,
             "room_name": meeting.room_name,

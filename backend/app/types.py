@@ -37,6 +37,12 @@ class MeetingsFilters:
     sort_by: Optional[MeetingsSorting] = None
 
     def __post_init__(self):
+
+        if self.start_min and isinstance(self.start_min, str):
+            self.start_min = datetime.fromisoformat(
+                self.start_min.replace("Z", "+00:00")
+            )
+
         if isinstance(self.sort_by, dict):
             self.sort_by = MeetingsSorting(**self.sort_by)
 

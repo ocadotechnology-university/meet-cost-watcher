@@ -64,9 +64,15 @@ export const MeetingFilters = ({onSearch,initialParticipants,onLogout}: MeetingF
                 sortOrder = 'asc';
                 break;
         }
+        const startMin = startDate && startTime
+  ? new Date(`${startDate}T${startTime}`).toISOString()
+  : '';
+        const startMax = endDate && endTime ? `${endDate}T${endTime}:00.000Z` : '';
 
-        // const startMin = startDate && startTime ? `${startDate}T${startTime}:00.000Z` : '';
-        // const startMax = endDate && endTime ? `${endDate}T${endTime}:00.000Z` : '';
+
+
+        console.log(startMin)
+        console.log(startMax)
 
         const request: MeetingRequest = {
             per_page: 20,
@@ -76,9 +82,9 @@ export const MeetingFilters = ({onSearch,initialParticipants,onLogout}: MeetingF
             duration_max: durationRange[1],
             cost_min: costRange[0],
             cost_max: costRange[1],
-            // participants_ids: selectedParticipants.map(p => p.id),
-            // start_min: startMin,
-            // start_max: startMax,
+            participant_ids: selectedParticipants.map(p => p.id),
+            start_min: startMin,
+            start_max: startMax,
             sort_by: {
                 field: sortField,
                 order: sortOrder
@@ -255,7 +261,7 @@ export const MeetingFilters = ({onSearch,initialParticipants,onLogout}: MeetingF
                     <hr className="gray-line" />
                     {/*<div className=" align-middle gap-2 text-sm text-gray-600 w-full pl-5 pt-3">*/}
                         <div
-                            className="align-middle items-center gap-2 text-sm text-gray-600 w-full pl-5 pt-3"
+                            className="align-middle items-center gap-2 text-sm text-gray-600 w-full pl-5 pt-3 cursor-pointer"
                             onClick={() => setUserMenuOpen(!userMenuOpen)}
                         >
                             <div className="flex justify-center">

@@ -141,7 +141,6 @@ class MeetingsAll(Resource):
     @auth.login_required
     def post(self):
         """Get all meetings with optional filtering"""
-
         user = auth.current_user()
         data = request.get_json()
         filters = None

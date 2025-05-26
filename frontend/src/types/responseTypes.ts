@@ -30,7 +30,7 @@ export interface MeetingRequest {
     duration_max?: number|null;
     cost_min?:number|null;
     cost_max?:number|null;
-    participants_ids?:number[]|null;
+    participant_ids?:number[]|null;
     start_min?: string|null;
     start_max?: string|null;
     sort_by?: SortData;
