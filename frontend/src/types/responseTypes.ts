@@ -60,18 +60,7 @@ export interface MeetingResponse {
     value: ResponseContent;
 }
 
-export interface MeetingFiltersState {
-    searchTerm: string;
-    startDate: string;
-    startTime: string;
-    endDate: string;
-    endTime: string;
-    durationRange: [number, number];
-    costRange: [number, number];
-    selectedPersons: Participant[];
-    sortOption: string;
-}
-
-export interface UserData {
-    username: string;
+export interface DateTimeState {
+    date: string;
+    time: string;
 }

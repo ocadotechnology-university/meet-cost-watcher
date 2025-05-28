@@ -9,7 +9,7 @@ import "rc-slider/assets/index.css";
 import {Meeting, MeetingRequest, MeetingResponse, Participant} from "../types/responseTypes.ts";
 import {MeetingFilters} from "../components/MeetingFilters.tsx"
 import MeetingDetails from "../components/MeetingDetails.tsx";
-import {formatDate, formatDuration, formatTime} from "../utils/formatFunctions.ts";
+import {formatDate, formatDuration, formatTime, toISODateTime} from "../utils/formatFunctions.ts";
 import {useContainerScroll} from "../hooks/infiniteScroll.ts";
 
 
@@ -17,7 +17,9 @@ export default function MultipleMeetingsPage(){
 
   const perPage = 20;
   const [initialLoading, setInitialLoading] = useState(true);
-
+  const today = new Date();
+  const monthAgo = new Date();
+  monthAgo.setDate(today.getDate() - 30);
   const [searchVersion, setSearchVersion] = useState(0);
   const [selectedMeetingId, setSelectedMeetingId] = useState<number|null>(null);
   const [meetingsCost, setMeetingsCost] = useState<number>(0);
@@ -25,6 +27,12 @@ export default function MultipleMeetingsPage(){
   const [currentRequest, setCurrentRequest] = useState<MeetingRequest>({
     per_page: perPage,
     page: 1,
+    start_min: toISODateTime(monthAgo.toISOString().split('T')[0], '00:00'),
+    start_max: toISODateTime(today.toISOString().split('T')[0],today.toTimeString().substring(0,5)),
+    sort_by: {
+      field: 'start_datetime',
+      order: 'desc'
+    }
   });
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string|null>(null);
@@ -35,9 +43,13 @@ export default function MultipleMeetingsPage(){
   const location = useLocation();
   const navigate = useNavigate();
   const backendURL = "http://127.0.0.1:5000";
+  const hasFetchedInitialData = useRef(false);
 
   useEffect(() => {
+    if (!hasFetchedInitialData.current) {
+      hasFetchedInitialData.current = true;
       fetchMeetings(1, true);
+    }
   }, []);
 
   const fetchMeetings = async (pageNum: number = 1, reset = false) => {
@@ -47,17 +59,7 @@ export default function MultipleMeetingsPage(){
     if (reset) {
       setInitialLoading(true);
     }
-
     setError(null);
-
-    //TODO: Remove after debug
-
-    // console.log(JSON.stringify({
-    //   ...currentRequest,
-    //   page: pageNum,
-    //   per_page:perPage
-    // }))
-
     try{
       const credentials = localStorage.getItem('credentials');
 
@@ -145,9 +147,10 @@ export default function MultipleMeetingsPage(){
 
   const handleEditCost = async (name:string, cost:number ,id?: number,) => {
     try {
-      if(id === undefined)
-      {
-        throw new Error(`Error with item id processing! `);
+      if (id === undefined) {
+        toast.error("Nieprawidłowe ID kosztu!");
+        console.error('Error: Item id is undefined');
+        return;
       }
       const credentials = localStorage.getItem('credentials');
 
@@ -165,7 +168,7 @@ export default function MultipleMeetingsPage(){
 
       if(response.ok)
       {
-        toast.success("Pomyślnie zedytowano koszto!");
+        toast.success("Pomyślnie zedytowano koszt!");
 
       } else {
         toast.error("Nie udało się zedytować kosztu!");
@@ -224,10 +227,13 @@ export default function MultipleMeetingsPage(){
   };
 
   useEffect(() => {
-    setPage(1);
-    setHasMore(true);
-    fetchMeetings(1, true);
-  },[currentRequest,searchVersion])
+
+    if (page !== 1 || meetingsList.length > 0) {
+      setPage(1);
+      setHasMore(true);
+      fetchMeetings(1, true);
+    }
+  }, [currentRequest, searchVersion]);
 
   const handleLogout = () => {
     localStorage.removeItem('credentials');
@@ -293,12 +299,15 @@ export default function MultipleMeetingsPage(){
       <MeetingFilters
         onSearch={handleSearch}
         initialParticipants={getUniqueParticipants(meetingsList)}
-        onLogout={handleLogout}/>
+        onLogout={handleLogout}
+        filterRequest={currentRequest}
+      />
 
       {/* Central part of the page */}
       <div className="text-center p-6">
         <h1 className="text-6xl font-normal text-blue-main">{meetingsCost.toFixed(2)} zł</h1>
         <p className="text-lg">CAŁKOWITY KOSZT WYBRANYCH SPOTKAŃ</p>
+        <p className="text-md">{new Date(currentRequest.start_min ? currentRequest.start_min : '').toLocaleDateString()} - {new Date(currentRequest.start_max ? currentRequest.start_max : '').toLocaleDateString()}</p>
         <div
             style={{ backgroundImage: `url(${logo})` }}
             className="top-6 right-6 absolute object-cover w-[6em] h-[6em] rounded-2xl bg-size-[130%] box-border overflow-hidden bg-center bg-no-repeat ">

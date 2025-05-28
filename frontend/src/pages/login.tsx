@@ -23,10 +23,9 @@ const LoginPage: React.FC = () => {
     try {
       const credentials = btoa(`${login}:${password}`);
       const bodyData = {
-        per_page: 20,
+        per_page: 1,
         page: 1
       }
-      console.log(credentials);
       const response = await fetch(backendURL+"/meetings/all", {
         method: "POST",
         headers: {
@@ -36,11 +35,6 @@ const LoginPage: React.FC = () => {
         body: JSON.stringify(bodyData)
       });
 
-      //TODO: Remove after debug
-
-      // const data: MeetingResponse = await response.json();
-      // console.log(data);
-  
       if (response.status === 401) {
         setLoginError(true); 
       } else if (response.status === 200) {

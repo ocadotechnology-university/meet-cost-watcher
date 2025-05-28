@@ -1,128 +1,149 @@
-import {MeetingRequest, Participant} from "../types/responseTypes.ts";
+import {DateTimeState, Meeting, MeetingRequest, Participant} from "../types/responseTypes.ts";
 // @ts-ignore
-import React, {useState} from "react";
+import React, {useEffect, useState} from "react";
 import Slider from "rc-slider";
 import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
 import {faAngleDown, faSignOutAlt} from "@fortawesome/free-solid-svg-icons";
 import "../style.css";
+import {toISODateTime} from "../utils/formatFunctions.ts";
 interface MeetingFiltersProperties {
     onSearch: (request: MeetingRequest) => void;
     onLogout: () => void;
     initialParticipants: Participant[];
+    filterRequest:MeetingRequest;
 }
 
-export const MeetingFilters = ({onSearch,initialParticipants,onLogout}: MeetingFiltersProperties) => {
-    const [durationRange, setDurationRange] = useState<[number,number]>([0,300]);
-    const [costRange, setCostRange] = useState<[number, number]>([0, 5000]);
-    const [searchTerm, setSearchTerm] = useState('');
-    const [startDate, setStartDate] = useState('');
-    const [startTime, setStartTime] = useState('');
-    const [endDate, setEndDate] = useState('');
-    const [endTime, setEndTime] = useState('');
-    const [sortOption, setSortOption] = useState('Data (malejąco)');
+export const MeetingFilters = ({onSearch,initialParticipants,onLogout,filterRequest}: MeetingFiltersProperties) => {
+
+    const todayDate = new Date();
+    const thirtyDaysAgo = new Date();
+    thirtyDaysAgo.setDate(todayDate.getDate() - 30);
+
+    const defaultStartDate = thirtyDaysAgo.toISOString().split('T')[0];
+    const defaultEndDate = todayDate.toISOString().split('T')[0];
+    const defaultTime = todayDate.toTimeString().substring(0, 5);
+
+
+    const [filterData, setFilterData] = useState<MeetingRequest>(filterRequest || {
+        per_page: 20,
+        page: 1,
+        name:'',
+        duration_min: 0,
+        duration_max: 300,
+        cost_min:0,
+        cost_max: 5000,
+        participant_ids:[],
+        start_min: toISODateTime(defaultStartDate, '00:00'),
+        start_max: toISODateTime(defaultEndDate,defaultTime),
+        sort_by: {
+            field: 'start_datetime',
+            order: 'desc'
+        }
+    });
+
     const [selectedParticipants, setSelectedParticipants] = useState<Participant[]>([]);
     const [availableParticipants, setAvailableParticipants] = useState<Participant[]>(
         Array.from(new Map(initialParticipants.map(p => [p.id, p])).values()).sort((a, b) => a.username.localeCompare(b.username)));
     const [userMenuOpen, setUserMenuOpen] = useState(false);
     const username = localStorage.getItem('username');
     const initLetter = username ? username.charAt(0).toUpperCase() : '';
-    const handleSearch = () => {
-        let sortField = 'name';
-        let sortOrder = 'desc';
 
-        switch (sortOption) {
-            case 'Data (rosnąco)':
-                sortField = 'start_datetime';
-                sortOrder = 'asc';
-                break;
-            case 'Data (malejąco)':
-                sortField = 'start_datetime';
-                sortOrder = 'desc';
-                break;
-            case 'Koszt (malejąco)':
-                sortField = 'cost';
-                sortOrder = 'desc';
-                break;
-            case 'Koszt (rosnąco)':
-                sortField = 'cost';
-                sortOrder = 'asc';
-                break;
-            case 'Czas trwania (malejąco)':
-                sortField = 'duration';
-                sortOrder = 'desc';
-                break;
-            case 'Czas trwania (rosnąco)':
-                sortField = 'duration';
-                sortOrder = 'asc';
-                break;
-            case 'Nazwa (malejąco)':
-                sortField = 'name';
-                sortOrder = 'desc';
-                break;
-            case 'Nazwa (rosnąco)':
-                sortField = 'name';
-                sortOrder = 'asc';
-                break;
+    const [startDateTime, setStartDateTime] = useState<DateTimeState>({
+        date: filterRequest.start_min?.split('T')[0] || defaultStartDate,
+        time: filterRequest.start_min?.split('T')[1] || '00:00'
+    });
+    const [endDateTime, setEndDateTime] = useState<DateTimeState>({
+        date: filterRequest.start_max?.split('T')[0] || defaultEndDate,
+        time: filterRequest.start_max?.split('T')[1] || defaultTime
+    });
+
+    useEffect(() => {
+        setFilterData(prev => ({
+            ...prev,
+            start_min: toISODateTime(startDateTime.date, startDateTime.time),
+            start_max: toISODateTime(endDateTime.date, endDateTime.time)
+        }));
+    }, [startDateTime, endDateTime]);
+
+    useEffect(() => {
+        if (filterData.participant_ids?.length) {
+            const selected = initialParticipants.filter(p =>
+                filterData.participant_ids?.includes(p.id)
+            );
+            setSelectedParticipants(selected);
+            setAvailableParticipants(
+                initialParticipants
+                    .filter(p => !filterData.participant_ids?.includes(p.id))
+                    .sort((a, b) => a.username.localeCompare(b.username))
+            );
         }
-        const startMin = startDate && startTime
-  ? new Date(`${startDate}T${startTime}`).toISOString()
-  : '';
-        const startMax = endDate && endTime ? `${endDate}T${endTime}:00.000Z` : '';
+    }, [initialParticipants]);
 
-
-
-        console.log(startMin)
-        console.log(startMax)
-
-        const request: MeetingRequest = {
-            per_page: 20,
-            page: 1,
-            name: searchTerm,
-            duration_min: durationRange[0],
-            duration_max: durationRange[1],
-            cost_min: costRange[0],
-            cost_max: costRange[1],
-            participant_ids: selectedParticipants.map(p => p.id),
-            start_min: startMin,
-            start_max: startMax,
-            sort_by: {
-                field: sortField,
-                order: sortOrder
-            }
-        }
-        onSearch(request);
+    const updateParticipantsInFilter = (participants: Participant[]) => {
+        setFilterData({
+            ...filterData,
+            participant_ids: participants.length > 0 ? participants.map(p => p.id) : null
+        });
     };
 
-        const resetFilters = () => {
-            setSearchTerm('');
-            setStartDate('');
-            setStartTime('');
-            setEndDate('');
-            setEndTime('');
-            setDurationRange([0,300]);
-            setCostRange([0,5000]);
-            setSelectedParticipants([]);
-            setSortOption('Data (malejąco)');
+    const addParticipant = (participant: Participant) => {
+        const newSelected = [...selectedParticipants, participant];
+        setSelectedParticipants(newSelected);
+        setAvailableParticipants(availableParticipants.filter(p => p.id !== participant.id));
+        updateParticipantsInFilter(newSelected);
+    };
 
-            onSearch({
-                per_page: 20,
-                page: 1
-            });
-        };
+    const removeParticipant = (participantId:number) => {
+        const person = selectedParticipants.find(p => p.id === participantId);
+        if (person) {
+            const newSelected = selectedParticipants.filter(p => p.id !== participantId);
+            setSelectedParticipants(newSelected);
+            setAvailableParticipants([...availableParticipants, person]
+                .sort((a, b) => a.username.localeCompare(b.username)));
+            updateParticipantsInFilter(newSelected);
+        }
+    };
 
-        const addParticipant = (participant: Participant) => {
-            setSelectedParticipants([...selectedParticipants, participant]);
-            setAvailableParticipants(availableParticipants.filter(p => p.id !== participant.id));
-        };
+    const handleSearch = () => {
 
-        const removeParticipant = (participantId:number) => {
-            const person = selectedParticipants.find(p => p.id === participantId);
-            if (person) {
-                setSelectedParticipants(selectedParticipants.filter(p => p.id !== participantId));
-                setAvailableParticipants([...availableParticipants, person]);
+        onSearch(filterData);
+    };
+
+    const resetFilters = () => {
+        setAvailableParticipants([
+            ...availableParticipants,
+            ...selectedParticipants
+        ].sort((a, b) => a.username.localeCompare(b.username)));
+
+        setSelectedParticipants([]);
+
+        setFilterData({
+            ...filterData,
+            name: '',
+            duration_min: 0,
+            duration_max: 300,
+            cost_min: 0,
+            cost_max: 5000,
+            participant_ids: null,
+            start_min: toISODateTime(defaultStartDate, '00:00'),
+            start_max: toISODateTime(defaultEndDate, defaultTime),
+            sort_by: {
+                field: 'start_datetime',
+                order: 'desc'
             }
-        };
+        });
 
+        onSearch({
+            per_page: 20,
+            page: 1,
+            start_min: toISODateTime(defaultStartDate, '00:00'),
+            start_max: toISODateTime(defaultEndDate, defaultTime),
+            sort_by: {
+                field: 'start_datetime',
+                order: 'desc'
+            }
+        });
+    }
 
     return (
             <div
@@ -136,56 +157,70 @@ export const MeetingFilters = ({onSearch,initialParticipants,onLogout}: MeetingF
                     type="text"
                     placeholder="Wpisz kod lub nazwę spotkania"
                     className="text-sm text-gray-600 text-center border border-gray-300 rounded-lg p-1 focus:outline-none"
-                    value={searchTerm}
-                    onChange={(e) => setSearchTerm(e.target.value)}
+                    value={filterData.name|| ''}
+                    onChange={(e) => setFilterData({...filterData,name: e.target.value})}
                 />
 
                 <div className="flex gap-2">
                     <label>Od:</label>
                     <input type="date" className="w-1/2 text-xs border border-gray-300 rounded-lg p-1"
-                           value={startDate}
-                           onChange={(e) => setStartDate(e.target.value)}
+                           value={startDateTime.date}
+                           onChange={(e) => setStartDateTime(prev => ({ ...prev, date: e.target.value }))}
                     />
                     <input type="time" className="w-1/2 text-xs border border-gray-300 rounded-lg p-1"
-                           value={startTime}
-                           onChange={(e) => setStartTime(e.target.value)}
+                           value={startDateTime.time.substring(0,5)}
+                           onChange={(e) => setStartDateTime(prev => ({ ...prev, time: e.target.value }))}
                     />
                 </div>
                 <div className="flex gap-2">
                     <label>Do:</label>
                     <input type="date" className="w-1/2 text-xs border border-gray-300 rounded-lg p-1"
-                           value={endDate}
-                           onChange={(e) => setEndDate(e.target.value)}
+                           value={endDateTime.date}
+                           onChange={(e) => setEndDateTime(prev => ({ ...prev, date: e.target.value }))}
                     />
                     <input type="time" className="w-1/2 text-xs border border-gray-300 rounded-lg p-1"
-                           value={endTime}
-                           onChange={(e) => setEndTime(e.target.value)}
+                           value={endDateTime.time.substring(0,5)}
+                           onChange={(e) => setEndDateTime(prev => ({ ...prev, time: e.target.value }))}
                     />
                 </div>
 
                 <div>
                     <label className="text-sm text-gray-700">Czas trwania
-                        <span className="float-end">{` ${durationRange[0]}-${durationRange[1]} min`}</span>
+                        <span className="float-end">{` ${filterData.duration_min|| 0}-${filterData.duration_max|| 300} min`}</span>
                     </label>
                     <Slider
                         range
                         min={0}
                         max={300}
-                        value={durationRange}
-                        onChange={(value: number | number[]) => setDurationRange(value as [number, number])}
+                        value={[filterData.duration_min || 0, filterData.duration_max || 300]}
+                        onChange={(value: number | number[]) => {
+                            const [min,max] = value as [number,number];
+                            setFilterData({
+                                ...filterData,
+                                duration_min:min,
+                                duration_max:max
+                            })
+                        }}
                     />
                 </div>
 
                 <div>
                     <label className="text-sm text-gray-700">Koszt spotkania
-                        <span className="float-end">{`${costRange[0]}-${costRange[1]} zł`}</span>
+                        <span className="float-end">{`${filterData.cost_min || 0}-${filterData.cost_max || 5000} zł`}</span>
                     </label>
                     <Slider
                         range
                         min={0}
                         max={5000}
-                        value={costRange}
-                        onChange={(value: number | number[]) => setCostRange(value as [number,number])}
+                        value={[filterData.cost_min || 0, filterData.cost_max || 5000]}
+                        onChange={(value: number | number[]) => {
+                            const [min,max] = value as [number,number];
+                            setFilterData({
+                                ...filterData,
+                                cost_min:min,
+                                cost_max:max
+                            })
+                        }}
                     />
                 </div>
                 <div>
@@ -228,17 +263,26 @@ export const MeetingFilters = ({onSearch,initialParticipants,onLogout}: MeetingF
                 <div>
                     <label className="text-sm text-gray-700 mt-2">Sortowanie</label>
                     <select className="text-sm border border-gray-300 rounded-lg p-1 w-full"
-                            value={sortOption}
-                            onChange={(e) => setSortOption(e.target.value)}
+                            value={`${filterData.sort_by?.field}|${filterData.sort_by?.order}`}
+                            onChange={(e) => {
+                                const [field, order] = e.target.value.split('|');
+                                setFilterData({
+                                    ...filterData,
+                                    sort_by: {
+                                        field: field as keyof Meeting,
+                                        order: order as 'asc' | 'desc'
+                                    }
+                                });
+                            }}
                     >
-                        <option>Nazwa (malejąco)</option>
-                        <option>Nazwa (rosnąco)</option>
-                        <option>Data (malejąco)</option>
-                        <option>Data (rosnąco)</option>
-                        <option>Koszt (malejąco)</option>
-                        <option>Koszt (rosnąco)</option>
-                        <option>Czas trwania (malejąco)</option>
-                        <option>Czas trwania (rosnąco)</option>
+                        <option value="start_datetime|desc">Data (malejąco)</option>
+                        <option value="start_datetime|asc">Data (rosnąco)</option>
+                        <option value="name|desc">Nazwa (malejąco)</option>
+                        <option value="name|asc">Nazwa (rosnąco)</option>
+                        <option value="cost|desc">Koszt (malejąco)</option>
+                        <option value="cost|asc">Koszt (rosnąco)</option>
+                        <option value="duration|desc">Czas trwania (malejąco)</option>
+                        <option value="duration|asc">Czas trwania (rosnąco)</option>
                     </select>
                 </div>
 
@@ -289,5 +333,3 @@ export const MeetingFilters = ({onSearch,initialParticipants,onLogout}: MeetingF
             </div>
         )
 };
-
-export default MeetingFilters;

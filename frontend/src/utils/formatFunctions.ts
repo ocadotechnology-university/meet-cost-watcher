@@ -27,3 +27,12 @@ export const  getTimeRange = (startDate: string, durationMinutes: number) => {
     const end = new Date(start.getTime() + durationMinutes * 60000);
     return `${formatTime(start)} - ${formatTime(end)}`;
 };
+
+export const toISODateTime = (date: string, time: string) => {
+    if (!date || !time) return undefined;
+
+    const [hours, minutes] = time.split(':');
+    const normalizedTime = `${hours}:${minutes}:00`;
+
+    return `${date}T${normalizedTime}`;
+};
