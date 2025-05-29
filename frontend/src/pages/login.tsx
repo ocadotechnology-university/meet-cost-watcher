@@ -1,11 +1,12 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import logo from './assets/logo.png'
-import login_background from './assets/login_background.jpg'
-import eye from './assets/eye.png'
+import logo from '../assets/logo.png'
+import login_background from '../assets/login_background.jpg'
+import eye from '../assets/eye.png'
 import { useContext } from "react";
-import { LoginContext } from "./context/LoginContext";
-import "./style2.css";
+import { LoginContext } from "../context/LoginContext.tsx";
+// import {MeetingResponse} from "../types/responseTypes.ts";
+import "../style2.css";
 
 const LoginPage: React.FC = () => {
   const [passwordVisible, setPasswordVisible] = useState(false);
@@ -21,19 +22,25 @@ const LoginPage: React.FC = () => {
   const handleLogin = async () => {
     try {
       const credentials = btoa(`${login}:${password}`);
-  
-      const response = await fetch(backendURL+"/test", {
+      const bodyData = {
+        per_page: 1,
+        page: 1
+      }
+      const response = await fetch(backendURL+"/meetings/all", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
           "Authorization": `Basic ${credentials}`, 
         },
+        body: JSON.stringify(bodyData)
       });
-  
+
       if (response.status === 401) {
         setLoginError(true); 
       } else if (response.status === 200) {
-        navigate("/multiple_meetings"); 
+        localStorage.setItem('credentials',credentials);
+        localStorage.setItem('username', login);
+        navigate("/multiple_meetings");
       }
     } catch (error) {
       console.error("Error during login:", error);
