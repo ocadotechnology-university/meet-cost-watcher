@@ -10,7 +10,7 @@ import {
     faLocationDot,
     faPlusCircle
 } from "@fortawesome/free-solid-svg-icons";
-// @ts-ignore
+
 import React, {useState} from "react";
 import {formatDate, getTimeRange} from "../utils/formatFunctions.ts";
 import {EditCostModal} from "./AdditionalCostsModal.tsx";

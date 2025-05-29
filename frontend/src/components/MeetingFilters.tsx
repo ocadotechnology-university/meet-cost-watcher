@@ -1,6 +1,6 @@
 import {DateTimeState, Meeting, MeetingRequest, Participant} from "../types/responseTypes.ts";
-// @ts-ignore
-import React, {useEffect, useState} from "react";
+
+import {useEffect, useState} from "react";
 import Slider from "rc-slider";
 import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
 import {faAngleDown, faSignOutAlt} from "@fortawesome/free-solid-svg-icons";
@@ -77,7 +77,7 @@ export const MeetingFilters = ({onSearch,initialParticipants,onLogout,filterRequ
                     .sort((a, b) => a.username.localeCompare(b.username))
             );
         }
-    }, [initialParticipants]);
+    }, [initialParticipants,filterData.participant_ids]);
 
     const updateParticipantsInFilter = (participants: Participant[]) => {
         setFilterData({

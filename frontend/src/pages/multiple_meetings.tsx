@@ -1,4 +1,4 @@
-import React, {useEffect, useMemo, useRef, useState} from "react";
+import React, {RefObject, useEffect, useMemo, useRef, useState} from "react";
 import {useLocation, useNavigate} from "react-router-dom";
 import {toast, ToastContainer} from 'react-toastify';
 import logo from '../assets/logo.png'
@@ -50,7 +50,7 @@ export default function MultipleMeetingsPage(){
       hasFetchedInitialData.current = true;
       fetchMeetings(1, true);
     }
-  }, []);
+  });
 
   const fetchMeetings = async (pageNum: number = 1, reset = false) => {
     if(isLoading || (!hasMore && !reset)) return;
@@ -105,8 +105,8 @@ export default function MultipleMeetingsPage(){
   };
 
 
-  // @ts-ignore
-  useContainerScroll(listContainerRef,() => {
+
+  useContainerScroll(listContainerRef  as RefObject<HTMLElement>,() => {
     if(!isLoading && hasMore) {
       fetchMeetings(page+1,)
     }
@@ -233,6 +233,7 @@ export default function MultipleMeetingsPage(){
       setHasMore(true);
       fetchMeetings(1, true);
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [currentRequest, searchVersion]);
 
   const handleLogout = () => {
