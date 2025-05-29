@@ -23,16 +23,18 @@ create_additonal_cost_input = api.model(
 delete_additonal_cost_input = api.model(
     "delete_additional_cost_input",
     {
-        "id": fields.Integer(description="ID of additonal cost to delete", required=True
-                             ),
+        "id": fields.Integer(
+            description="ID of additonal cost to delete", required=True
+        ),
     },
 )
 
 update_additonal_cost_input = api.model(
     "update_additional_cost_input",
     {
-        "id": fields.Integer(description="ID of additonal cost to modify", required=True
-                             ),
+        "id": fields.Integer(
+            description="ID of additonal cost to modify", required=True
+        ),
         "name": fields.String(description="Cost name", required=True),
         "cost": fields.Float(description="Cost amount", required=True),
     },
@@ -46,9 +48,7 @@ additional_cost_output = api.model(
             description="Indicates the status of response",
             required=True,
         ),
-        "content": fields.String(
-            description="Empty if success", required=True
-        ),
+        "content": fields.String(description="Empty if success", required=True),
     },
 )
 
