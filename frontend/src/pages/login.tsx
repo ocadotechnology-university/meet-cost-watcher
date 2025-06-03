@@ -40,6 +40,24 @@ const LoginPage: React.FC = () => {
       } else if (response.status === 200) {
         localStorage.setItem('credentials',credentials);
         localStorage.setItem('username', login);
+
+        const users = await fetch(backendURL+"/users/", {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Basic ${credentials}`, 
+          }
+        });
+        if(response.ok) {
+          const res = await users.json();
+          const usersData = res.value || [];
+          type User = { username: string; app_role?: string };
+          const found = usersData.find((u: User) => u.username === login);
+          const app_role = found ? found.app_role : "employee";
+          localStorage.setItem('app_role', app_role);
+        } else {
+          localStorage.setItem('app_role', "employee");
+        }
         navigate("/multiple_meetings");
       }
     } catch (error) {
