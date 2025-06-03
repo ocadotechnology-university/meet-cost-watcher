@@ -62,15 +62,20 @@ meetings_all_input = api.model(
 meeting_model = api.model(
     "Meeting",
     {
-        "id": fields.Integer(description="Meeting ID", required=True),
-        "token": fields.String(description="Meeting token", required=True),
-        "title": fields.String(description="Meeting title", required=True),
-        "date": fields.DateTime(description="Meeting start date", required=True),
-        "duration": fields.Integer(
-            description="Meeting duration in minutes", required=True
-        ),
-        "description": fields.String(
-            description="meeting description if exists", required=True
+        "id": fields.Integer(description="Meeting ID"),
+        "token": fields.String(description="Meeting token"),
+        "title": fields.String(description="Meeting title"),
+        "date": fields.DateTime(description="Meeting start date"),
+        "duration": fields.Integer(description="Meeting duration in minutes"),
+        "description": fields.String(description="meeting description if exists"),
+        "owner": fields.Nested(
+            api.model(
+                "Owner",
+                {
+                    "id": fields.Integer(description="User ID"),
+                    "username": fields.String(description="Username"),
+                },
+            )
         ),
         "room_name": fields.String(description="Meeting room name", required=True),
         "cost": fields.Float(description="Meeting cost", required=True),

@@ -59,3 +59,22 @@ class UpdateAdditionalCostInput:
     id: int
     name: str
     cost: float
+
+
+@dataclass
+class CreateUserInput:
+    username: str
+    password: str
+    role_name: str
+    hourly_cost: float
+    app_role: str
+
+
+@dataclass
+class UpdateUserInput:
+    id: int
+    username: Optional[str] = None
+    password: Optional[str] = None
+    role_name: Optional[str] = None
+    hourly_cost: Optional[float] = None
+    app_role: Optional[str] = None
