@@ -11,7 +11,7 @@ import {MeetingFilters} from "../components/MeetingFilters.tsx"
 import MeetingDetails from "../components/MeetingDetails.tsx";
 import {formatDate, formatDuration, formatTime, toISODateTime} from "../utils/formatFunctions.ts";
 import {useContainerScroll} from "../hooks/infiniteScroll.ts";
-
+import { backendURL } from "../main.tsx";
 
 export default function MultipleMeetingsPage(){
 
@@ -42,7 +42,6 @@ export default function MultipleMeetingsPage(){
   const listContainerRef = useRef<HTMLDivElement>(null);
   const location = useLocation();
   const navigate = useNavigate();
-  const backendURL = "http://127.0.0.1:5000";
   const hasFetchedInitialData = useRef(false);
 
   useEffect(() => {

@@ -7,6 +7,8 @@ import MultipleMeetingsPage from "./pages/multiple_meetings.tsx";
 import AdminPage from "./pages/admin.tsx";
 import { LoginProvider } from "./context/LoginProvider.tsx";
 
+export const backendURL = "http://127.0.0.1:5000";
+
 createRoot(document.getElementById("root")!).render(
   <StrictMode>
     <LoginProvider>

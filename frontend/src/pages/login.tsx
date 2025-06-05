@@ -6,6 +6,7 @@ import eye from '../assets/eye.png'
 import { useContext } from "react";
 import { LoginContext } from "../context/LoginContext.tsx";
 // import {MeetingResponse} from "../types/responseTypes.ts";
+import { backendURL } from "../main.tsx";
 import "../style2.css";
 
 const LoginPage: React.FC = () => {
@@ -13,7 +14,6 @@ const LoginPage: React.FC = () => {
   const [loginError, setLoginError] = useState(false);
   const { login, setLogin, password, setPassword } = useContext(LoginContext);
   const navigate = useNavigate();
-  const backendURL = "http://127.0.0.1:5000";
 
   const togglePassword = () => {
     setPasswordVisible(!passwordVisible);
