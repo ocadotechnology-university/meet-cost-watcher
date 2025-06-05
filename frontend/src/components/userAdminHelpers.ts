@@ -1,11 +1,12 @@
 import { useState, useRef, useEffect } from "react";
 import { backendURL } from "../main.tsx";
 import { useNavigate } from "react-router-dom";
+import type { User } from "../types/user";
 
 // Funkcja pomocnicza do inicjałów
 export function getInitials(username: string) {
   if (!username) return "?";
-return username
+  return username
     .split(" ")
     .map((n) => n[0])
     .join("")
@@ -15,10 +16,10 @@ return username
 
 // Hook do wszystkich stanów i referencji używanych w admin.tsx i mobileAdmin.tsx
 export function useUserAdminState() {
-  const [users, setUsers] = useState<any[]>([]);
-  const [filteredUsers, setFilteredUsers] = useState<any[]>([]);
-  const [sortedUsers, setSortedUsers] = useState<any[]>([]);
-  const [selectedUser, setSelectedUser] = useState<any | null>(null);
+  const [users, setUsers] = useState<User[]>([]);
+  const [filteredUsers, setFilteredUsers] = useState<User[]>([]);
+  const [sortedUsers, setSortedUsers] = useState<User[]>([]);
+  const [selectedUser, setSelectedUser] = useState<User | null>(null);
   const listContainerRef = useRef<HTMLDivElement>(null);
   const [costRange, setCostRange] = useState<[number, number]>([0, 5000]);
   const mainRef = useRef<HTMLDivElement>(null);
@@ -35,7 +36,7 @@ export function useUserAdminState() {
     password: "",
     role_name: "",
     hourly_cost: "",
-    app_role: "employee" // zamiast "EMPLOYEE"
+    app_role: "employee"
   });
   const [formError, setFormError] = useState<string | null>(null);
   const [isEditMode, setIsEditMode] = useState(false);
@@ -61,23 +62,22 @@ export function useUserAdminState() {
       });
       if (response.ok) {
         const data = await response.json();
-        const newUsers = data.value || [];
+        const newUsers: User[] = data.value || [];
         setUsers(newUsers);
         setFilteredUsers(newUsers);
 
         // Odśwież pole użytkownik (selectedUser)
         if (newUsers.length > 0) {
-          // Jeśli obecny selectedUser istnieje w nowej liście, ustaw go ponownie, inaczej pierwszy z listy
-          setSelectedUser(prev =>
-            prev && newUsers.some(u => u.id === prev.id)
-              ? newUsers.find(u => u.id === prev.id)
+          setSelectedUser((prev) =>
+            prev && newUsers.some((u) => u.id === prev.id)
+              ? newUsers.find((u) => u.id === prev.id) || null
               : newUsers[0]
           );
         } else {
           setSelectedUser(null);
         }
       }
-    } catch (e) {
+    } finally {
       // obsługa błędów opcjonalna
     }
   };
@@ -103,7 +103,7 @@ export function useUserAdminState() {
   }, [users]);
 
   const handleSearch = () => {
-    let filtered = users
+    const filtered = users
       .filter(u =>
         (!searchName || u.username.toLowerCase().includes(searchName.toLowerCase())) &&
         (!roleFilter || u.role_name === roleFilter) &&
@@ -115,7 +115,7 @@ export function useUserAdminState() {
 
   // sortowanie zawsze na podstawie filteredUsers i sortBy
   useEffect(() => {
-    let sorted = [...filteredUsers];
+    const sorted = [...filteredUsers];
     if (sortBy === 'hourly_cost_asc') {
       sorted.sort((a, b) => a.hourly_cost - b.hourly_cost);
     } else {
@@ -142,7 +142,7 @@ export function useUserAdminState() {
 
   const handleNewUserChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
-    const utf8Pattern = /^[\u0000-\uFFFF]*$/;
+    const utf8Pattern = /^[\u0020-\uFFFF]*$/;
     if (
       (name === "username" || name === "role_name") &&
       !utf8Pattern.test(value)
@@ -188,13 +188,25 @@ export function useUserAdminState() {
         })
       });
       if (response.ok) {
-        fetchUsers();
+        await fetchUsers();
+        // Ustaw nowo dodanego użytkownika jako wybranego
+        const addedUser = users.find(
+          u =>
+            u.username === newUser.username &&
+            u.role_name === newUser.role_name &&
+            Number(u.hourly_cost) === Number(newUser.hourly_cost)
+        );
+        if (addedUser) {
+          setSelectedUser(addedUser);
+        } else if (users.length > 0) {
+          setSelectedUser(users[users.length - 1]);
+        }
         setNewUser({
           username: "",
           password: "",
           role_name: "",
           hourly_cost: "",
-          app_role: "employee" // zamiast "EMPLOYEE"
+          app_role: "employee"
         });
       } else {
         setFormError("Błąd dodawania użytkownika.");
@@ -261,10 +273,10 @@ export function useUserAdminState() {
         })
       });
       if (response.ok) {
-        const selectCopy = selectedUser.id;
+        const selectCopy = selectedUser ? selectedUser.id : null;
         cancelEdit();
         fetchUsers();
-        setSelectedUser(users.find(u => u.id === selectCopy) || null);
+        setSelectedUser(selectCopy ? users.find(u => u.id === selectCopy) || null : null);
       } else {
         setFormError("Błąd zapisu zmian.");
       }

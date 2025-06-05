@@ -42,10 +42,14 @@ export default function AdminPanel() {
                 Math.floor(state.costRange[0]),
                 Math.ceil(state.costRange[1])
               ]}
-              onChange={(value: number[]) => state.setCostRange([
-                Math.floor(value[0]),
-                Math.ceil(value[1])
-              ] as [number, number])}
+              onChange={(value: number | number[]) => {
+                if (Array.isArray(value)) {
+                  state.setCostRange([
+                    Math.floor(value[0]),
+                    Math.ceil(value[1])
+                  ] as [number, number]);
+                }
+              }}
             />
           </div>
           <div className="mb-4">
@@ -53,7 +57,7 @@ export default function AdminPanel() {
             <select
               className="w-full p-2 border rounded"
               value={state.sortBy}
-              onChange={e => state.setSortBy(e.target.value as any)}
+              onChange={e => state.setSortBy(e.target.value as "hourly_cost_asc" | "hourly_cost_desc")}
             >
               <option value="hourly_cost_asc">Wypłata (rosnąco)</option>
               <option value="hourly_cost_desc">Wypłata (malejąco)</option>
@@ -164,10 +168,10 @@ export default function AdminPanel() {
                     <FontAwesomeIcon
                       icon={faPenToSquare}
                       className="text-2xl cursor-pointer"
-                      onClick={e => {
+                      onClick={(e) => {
                         if (!state.isAdmin) {
-                          e.preventDefault?.();
-                          state.showNoAdmin(e);
+                          e.preventDefault();
+                          state.showNoAdmin(e as unknown as React.MouseEvent<HTMLElement>);
                         } else {
                           state.startEditUser();
                         }
@@ -180,7 +184,7 @@ export default function AdminPanel() {
                       onClick={e => {
                         if (!state.isAdmin) {
                           e.preventDefault?.();
-                          state.showNoAdmin(e);
+                          state.showNoAdmin(e as unknown as React.MouseEvent<HTMLElement>);
                         }  else {
                           state.setShowDeleteConfirm(true);
                         }

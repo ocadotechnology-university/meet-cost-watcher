@@ -60,10 +60,14 @@ export default function MobileAdminPanel() {
                   Math.floor(state.costRange[0]),
                   Math.ceil(state.costRange[1])
                 ]}
-                onChange={(value: number[]) => state.setCostRange([
-                  Math.floor(value[0]),
-                  Math.ceil(value[1])
-                ] as [number, number])}
+                onChange={(value: number | number[]) => {
+                  if (Array.isArray(value)) {
+                    state.setCostRange([
+                      Math.floor(value[0]),
+                      Math.ceil(value[1])
+                    ] as [number, number]);
+                  }
+                }}
               />
             </div>
             <div className="mb-4">
@@ -71,7 +75,7 @@ export default function MobileAdminPanel() {
               <select
                 className="w-full p-2 border rounded"
                 value={state.sortBy}
-                onChange={e => state.setSortBy(e.target.value as any)}
+                onChange={e => state.setSortBy(e.target.value as "hourly_cost_asc" | "hourly_cost_desc")}
               >
                 <option value="hourly_cost_asc">Wypłata (rosnąco)</option>
                 <option value="hourly_cost_desc">Wypłata (malejąco)</option>
@@ -354,21 +358,24 @@ export default function MobileAdminPanel() {
             <div className="text-xl font-bold">{state.selectedUser.username}</div>
             <div className="text-gray-500 mb-4">{state.selectedUser.email || "temp@mail.xd"}</div>
             <div className="w-full grid grid-cols-1 gap-4">
-              <div className="bg-white rounded shadow p-4 flex items-center gap-4">
-                <img src={dolar} alt="Dolar" className="w-6 h-6" />
-                <span className="text-blue-700 font-bold">{Number(state.selectedUser.hourly_cost).toFixed(2)} zł / h</span>
-                <span className="ml-auto text-gray-500">Wypłata</span>
-              </div>
-              <div className="bg-white rounded shadow p-4 flex items-center gap-4">
-                <img src={person} alt="Person" className="w-6 h-6" />
-                <span className="font-bold">{state.selectedUser.role_name}</span>
-                <span className="ml-auto text-gray-500">Rola</span>
-              </div>
-              <div className="bg-white rounded shadow p-4 flex items-center gap-4">
-                <img src={key} alt="Key" className="w-6 h-6" />
-                <span className="font-bold">{state.selectedUser.app_role?.toUpperCase()}</span>
-                <span className="ml-auto text-gray-500">Uprawnienia</span>
-              </div>
+            <hr className=""></hr>
+              <div className="white-shadow-bordered-div little-grid-box text-center">
+                    <img src={dolar} alt="Dolar" className="icon-positioning" />
+                    <p className="text-3xl font-bold text-custom-teal">{state.selectedUser?.hourly_cost !== undefined && state.selectedUser?.hourly_cost !== null
+                      ? `${Number(state.selectedUser.hourly_cost).toFixed(2)}zł /h`
+                      : "-"}</p>
+                    <p className="text-lg">Wypłata</p>
+                  </div>
+                  <div className="white-shadow-bordered-div little-grid-box text-center">
+                    <img src={person} alt="Dolar" className="icon-positioning" />
+                    <p className="text-3xl font-bold">{state.selectedUser?.role_name || "-"}</p>
+                    <p className="text-lg">Rola</p>
+                  </div>
+                  <div className="white-shadow-bordered-div little-grid-box text-center">
+                    <img src={key} alt="Key" className="icon-positioning" />
+                    <p className="text-3xl font-bold">{state.selectedUser?.app_role || "-"}</p>
+                    <p className="text-lg">Uprawnienia</p>
+                  </div>
             </div>
             { state.isAdmin && (
                 <div className="w-full">
@@ -414,7 +421,7 @@ export default function MobileAdminPanel() {
   );
 }
 
-function topMenu(state: any) {
+function topMenu(state: ReturnType<typeof useUserAdminState>) {
     return(
         <div className="sticky top-0 bg-white">
             <div className="flex justify-between items-center p-4 border-b ">
