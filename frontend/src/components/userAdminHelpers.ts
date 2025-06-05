@@ -88,7 +88,6 @@ export function useUserAdminState() {
 
   useEffect(() => {
     fetchUsers();
-    // eslint-disable-next-line
   }, []);
 
   useEffect(() => {
