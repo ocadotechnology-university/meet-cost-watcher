@@ -477,7 +477,9 @@ export default function AdminPanel() {
                 <div className="col-span-3 grid grid-cols-3 gap-x-4 text-center h-fit">
                   <div className="white-shadow-bordered-div little-grid-box">
                     <img src={dolar} alt="Dolar" className="icon-positioning" />
-                    <p className="text-xl font-bold text-custom-teal">{selectedUser?.hourly_cost ? `${selectedUser.hourly_cost}zł /h` : "-"}</p>
+                    <p className="text-xl font-bold text-custom-teal">{selectedUser?.hourly_cost !== undefined && selectedUser?.hourly_cost !== null
+                      ? `${Number(selectedUser.hourly_cost).toFixed(2)}zł /h`
+                      : "-"}</p>
                     <p className="text-lg">Wypłata</p>
                   </div>
                   <div className="white-shadow-bordered-div little-grid-box">
@@ -495,7 +497,7 @@ export default function AdminPanel() {
 
               {/* Form */}
               <div className="bg-white p-6 rounded-lg shadow">
-                <h2 className="text-lg font-semibold text-blue-800">Nowy Użytkownik</h2>
+                <h2 className="text-lg font-semibold text-blue-800">{!isEditMode ? <>Nowy Użytkownik</> : <>Edytowanie użytkownika</>}</h2>
                 <hr className="gray-line my-2" />
                 <form className="grid grid-cols-2 gap-4" onSubmit={isEditMode ? handleEditUser : handleAddUser}>
                   <div className="col-span-2">
@@ -536,11 +538,11 @@ export default function AdminPanel() {
                     <input
                       type={passwordVisible?"password":"text"}
                       name="password"
-                      placeholder="Hasło"
+                      placeholder={!isEditMode ? "Hasło" : "Takie jak wcześniej"}
                       className="p-2 border rounded w-full"
                       value={newUser.password}
                       onChange={handleNewUserChange}
-                      required
+                      required={!isEditMode}
                     />
                   </div>
                   <div className="col-span-2">
