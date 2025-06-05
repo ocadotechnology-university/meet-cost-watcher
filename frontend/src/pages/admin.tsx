@@ -1,4 +1,3 @@
-import React, { useState, useEffect, useRef, use } from "react";
 import "../style.css";
 import Slider from "rc-slider";
 import "rc-slider/assets/index.css";
@@ -10,7 +9,6 @@ import dolar from '../assets/dolar.png'
 import key from '../assets/key.png'
 import eye from '../assets/eye.png'
 import { getInitials, useUserAdminState } from "../components/userAdminHelpers";
-import { backendURL } from "../main.tsx";
 import MobileAdminPanel from "../components/mobileAdmin.tsx";
 
 export default function AdminPanel() {
