@@ -2,14 +2,25 @@
 @import "tailwindcss/utilities.css" layer(utilities);
 
 @layer theme, base, components, utilities;
+@import "tailwindcss/theme.css" layer(theme);
+@import "tailwindcss/utilities.css" layer(utilities);
 
-@layer base{
-* {
+@layer base {
+  * {
     list-style: none;
     line-height: 1.5;
     -webkit-text-size-adjust: 100%;
     tab-size: 4;
-    font-family: var(--default-font-family, ui-sans-serif, system-ui, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji");
+    font-family: var(
+      --default-font-family,
+      ui-sans-serif,
+      system-ui,
+      sans-serif,
+      "Apple Color Emoji",
+      "Segoe UI Emoji",
+      "Segoe UI Symbol",
+      "Noto Color Emoji"
+    );
     font-feature-settings: var(--default-font-feature-settings, normal);
     font-variation-settings: var(--default-font-variation-settings, normal);
     -webkit-tap-highlight-color: transparent;
@@ -21,28 +32,28 @@
 @theme {
   --color-custom-grey: #f6f6f6;
   --color-blue-main: #283593;
-  --color-custom-teal: #17CADE;
+  --color-custom-teal: #17cade;
 }
 
-@layer components{
-  .bordered-light-gray{
-    @apply border-1 border-gray-200 rounded-lg p-4
+@layer components {
+  .bordered-light-gray {
+    @apply border-1 border-gray-200 rounded-lg p-4;
   }
 
-  .white-shadow-bordered-div{
+  .white-shadow-bordered-div {
     @apply bg-white rounded-2xl shadow p-4 border-1 border-gray-200;
   }
-  
-  .icon-positioning{
+
+  .icon-positioning {
     @apply max-h-[4.5em] row-span-2 self-center object-scale-down transform -translate-y-3/5 relative top-1/2;
   }
 
-  .little-grid-box{
+  .little-grid-box {
     @apply grid grid-cols-2 max-h-[6em];
   }
 
-  .gray-line{
-    @apply border-gray-200 border-1
+  .gray-line {
+    @apply border-gray-200 border-1;
   }
 
   .horizontal-slider {
