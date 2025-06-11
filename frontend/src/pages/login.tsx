@@ -35,6 +35,41 @@ const LoginPage: React.FC = () => {
         body: JSON.stringify(bodyData)
       });
 
+      const json = await response.json();
+      console.log(json);
+
+      if (response.status === 401) {
+        setLoginError(true); 
+      } else if (response.status === 200) {
+        localStorage.setItem('credentials',credentials);
+        localStorage.setItem('username', login);
+        navigate("/multiple_meetings");
+      }
+    } catch (error) {
+      console.error("Error during login:", error);
+      setLoginError(true);
+    }
+  };
+
+   const handleGoogleLogin = async () => {
+    try {
+      const credentials = btoa(`james21:123`);
+      const bodyData = {
+        per_page: 1,
+        page: 1
+      }
+      const response = await fetch(backendURL+"/meetings/sync", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Basic ${credentials}`, 
+        },
+        body: JSON.stringify(bodyData)
+      });
+
+      const json = await response.json();
+      console.log(json);
+
       if (response.status === 401) {
         setLoginError(true); 
       } else if (response.status === 200) {
@@ -109,6 +144,15 @@ const LoginPage: React.FC = () => {
             LOGIN
           </button>
         </form>
+
+        <button
+            type="submit"
+            className="bg-blue-main text-white px-8 py-2 rounded-full font-bold tracking-wide cursor-pointer"
+            onClick={handleGoogleLogin}
+
+          >
+            LOGIN via Google
+          </button>
   
         {/* Extra link */}
         <p className="text-white text-s mt-6 text-center">

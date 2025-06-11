@@ -22,3 +22,7 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+credentials.json
+token.json
+google_calendar copy.py
