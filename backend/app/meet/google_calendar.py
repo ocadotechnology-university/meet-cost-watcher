@@ -45,16 +45,120 @@ def authorize():
         with open(token_path, "w") as token:
             token.write(creds.to_json())
 
-    print("Zautoryzowano!")
+    print("Authorized!")
 
     return creds
 
 
-def save_meetings_from_calendar():
 
+
+
+
+
+
+def process_events(events):
+    new_meeting_count = 0
+    for event in events:
+        if event.get("hangoutLink"):
+            if save_single_event(event):
+                new_meeting_count += 1
+    return new_meeting_count
+
+
+
+
+def save_single_event(event):
+    hangout_link = event.get("hangoutLink")
+    name = event.get("summary", "")
+    start_str = event["start"].get("dateTime", event["start"].get("date"))
+    end_str = event["end"].get("dateTime", event["end"].get("date"))
+    participants = [att["email"] for att in event.get("attendees", []) if "email" in att]
+    room = event.get("location", "")
+    description = event.get("description", "")
+
+    try:
+        start = datetime.datetime.fromisoformat(start_str.replace("Z", "+00:00"))
+        end = datetime.datetime.fromisoformat(end_str.replace("Z", "+00:00"))
+        created_at = datetime.datetime.fromisoformat(event.get("created").replace("Z", "+00:00")) if event.get("created") else datetime.datetime.utcnow()
+    except Exception as e:
+        print(f"Parse error, event '{name}': {e}")
+        return False
+
+    if Meeting.query.filter_by(token=hangout_link, name=name, start_datetime=start).first():
+        return False
+
+    meeting_users = get_or_create_users(participants)
+    
+    organizer_email = event.get("organizer", {}).get("email"),
+    owner = User.query.filter_by(username=organizer_email).first()
+    owner_id = owner.id
+
+
+    meeting = Meeting(
+        name=name,
+        start_datetime=start,
+        duration=(end - start).seconds // 60,
+        room_name=room,
+        cost=0.0,
+        token=hangout_link.remove("https://meet.google.com/"),
+        created_at=created_at,
+        description=description,
+        owner_id=owner_id,
+    )
+
+    for user in meeting_users:
+        meeting.users.append(user)
+
+    db.session.add(meeting)
+    db.session.commit()
+    print(f'+ "{name}"')
+    return True
+
+
+
+def get_or_create_users(participants_emails):
+    users = []
+    for email in participants_emails:
+        user = User.query.filter_by(username=email).first()
+        if not user:
+            user = User(
+                username=email,
+                role_name="unknown",
+                hourly_cost=0.0,
+                app_role="EMPLOYEE",
+            )
+            user.hash_password("123")
+            db.session.add(user)
+            db.session.commit()
+            print(f'* Added user: "{email}"')
+        users.append(user)
+    print(users)
+    return users
+
+
+
+def save_meetings_from_calendar():
     creds = authorize()
     service = build("calendar", "v3", credentials=creds)
 
-    # 100 last meetings
+    now = datetime.datetime.utcnow().isoformat() + "Z"
+    print("Getting events with Google Meet link...\n")
+    events_result = (
+        service.events()
+        .list(
+            calendarId="primary",
+            timeMax=now,
+            maxResults=100,
+            singleEvents=True,
+        )
+        .execute()
+    )
+    events = events_result.get("items", [])
 
-    print("Pobieranie wydarzeń z linkiem Google Meet...\n")
+    if not events:
+        print("No events with Google Meet.")
+        return
+
+    print(f"Get {len(events)} events from Google Calendar. Uploading to database...\n")
+    new_num = process_events(events)
+    print(f"Added {new_num} meetings. {len(events) - new_num} already exist in the database.\n")
