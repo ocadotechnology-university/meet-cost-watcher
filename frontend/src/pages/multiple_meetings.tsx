@@ -57,7 +57,7 @@ export default function MultipleMeetingsPage(){
       setHasMore(true);
       fetchMeetings(1, true);
     }
-
+// eslint-disable-next-line react-hooks/exhaustive-deps
   },[searchVersion]);
 
   const fetchMeetings = async (pageNum: number = 1, reset = false) => {
@@ -234,16 +234,6 @@ export default function MultipleMeetingsPage(){
     setCurrentRequest(request);
     setSearchVersion(prev => prev + 1);
   };
-
-  // useEffect(() => {
-  //   console.log("page: "+page+" len:"+meetingsList.length);
-  //   if (!hasFetchedInitialData.current) return;
-  //     setPage(1);
-  //     setHasMore(true);
-  //     fetchMeetings(1, true);
-  //
-  //   // eslint-disable-next-line react-hooks/exhaustive-deps
-  // }, [currentRequest]);
 
   const handleLogout = () => {
     localStorage.removeItem('credentials');
