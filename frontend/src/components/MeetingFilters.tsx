@@ -1,6 +1,6 @@
 import {DateTimeState, Meeting, MeetingRequest, Participant} from "../types/responseTypes.ts";
 
-import {useEffect, useState} from "react";
+import { useState} from "react";
 import Slider from "rc-slider";
 import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
 import {faAngleDown, faSignOutAlt} from "@fortawesome/free-solid-svg-icons";
@@ -41,9 +41,19 @@ export const MeetingFilters = ({onSearch,initialParticipants,onLogout,filterRequ
         }
     });
 
-    const [selectedParticipants, setSelectedParticipants] = useState<Participant[]>([]);
-    const [availableParticipants, setAvailableParticipants] = useState<Participant[]>(
-        Array.from(new Map(initialParticipants.map(p => [p.id, p])).values()).sort((a, b) => a.username.localeCompare(b.username)));
+    const [selectedParticipants, setSelectedParticipants] = useState<Participant[]>(() =>
+        filterRequest.participant_ids
+            ? initialParticipants.filter(p => filterRequest.participant_ids?.includes(p.id))
+            : []
+    );
+
+    const [availableParticipants, setAvailableParticipants] = useState<Participant[]>(() => {
+        const selectedIds = new Set(filterRequest.participant_ids ?? []);
+        return initialParticipants
+            .filter(p => !selectedIds.has(p.id))
+            .sort((a, b) => a.username.localeCompare(b.username));
+    });
+
     const [userMenuOpen, setUserMenuOpen] = useState(false);
     const username = localStorage.getItem('username');
     const initLetter = username ? username.charAt(0).toUpperCase() : '';
@@ -57,27 +67,6 @@ export const MeetingFilters = ({onSearch,initialParticipants,onLogout,filterRequ
         time: filterRequest.start_max?.split('T')[1] || defaultTime
     });
 
-    useEffect(() => {
-        setFilterData(prev => ({
-            ...prev,
-            start_min: toISODateTime(startDateTime.date, startDateTime.time),
-            start_max: toISODateTime(endDateTime.date, endDateTime.time)
-        }));
-    }, [startDateTime, endDateTime]);
-
-    useEffect(() => {
-        if (filterData.participant_ids?.length) {
-            const selected = initialParticipants.filter(p =>
-                filterData.participant_ids?.includes(p.id)
-            );
-            setSelectedParticipants(selected);
-            setAvailableParticipants(
-                initialParticipants
-                    .filter(p => !filterData.participant_ids?.includes(p.id))
-                    .sort((a, b) => a.username.localeCompare(b.username))
-            );
-        }
-    }, [initialParticipants,filterData.participant_ids]);
 
     const updateParticipantsInFilter = (participants: Participant[]) => {
         setFilterData({
@@ -105,9 +94,15 @@ export const MeetingFilters = ({onSearch,initialParticipants,onLogout,filterRequ
     };
 
     const handleSearch = () => {
-
-        onSearch(filterData);
+        const updatedData = {
+            ...filterData,
+            start_min: toISODateTime(startDateTime.date, startDateTime.time),
+            start_max: toISODateTime(endDateTime.date, endDateTime.time),
+            page: 1
+        };
+        onSearch(updatedData);
     };
+
 
     const resetFilters = () => {
         setAvailableParticipants([

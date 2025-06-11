@@ -48,10 +48,20 @@ export default function MultipleMeetingsPage(){
     if (!hasFetchedInitialData.current) {
       hasFetchedInitialData.current = true;
       fetchMeetings(1, true);
+      return;
     }
-  });
+
+    if(hasFetchedInitialData || searchVersion > 0)
+    {
+      setPage(1);
+      setHasMore(true);
+      fetchMeetings(1, true);
+    }
+// eslint-disable-next-line react-hooks/exhaustive-deps
+  },[searchVersion]);
 
   const fetchMeetings = async (pageNum: number = 1, reset = false) => {
+    console.log(`Fetching meetings (page: ${pageNum}, reset: ${reset})`);
     if(isLoading || (!hasMore && !reset)) return;
 
     setIsLoading(true);
@@ -225,16 +235,6 @@ export default function MultipleMeetingsPage(){
     setSearchVersion(prev => prev + 1);
   };
 
-  useEffect(() => {
-
-    if (page !== 1 || meetingsList.length > 0) {
-      setPage(1);
-      setHasMore(true);
-      fetchMeetings(1, true);
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [currentRequest, searchVersion]);
-
   const handleLogout = () => {
     localStorage.removeItem('credentials');
     sessionStorage.removeItem('credentials');
@@ -368,7 +368,7 @@ export default function MultipleMeetingsPage(){
         </div>
 
         {/* Details of selected meeting */}
-        {selectedMeeting && (
+        {selectedMeeting ? (
             <MeetingDetails
                 meeting={selectedMeeting}
                 onNewCost={handleNewCost}
@@ -377,6 +377,10 @@ export default function MultipleMeetingsPage(){
                 refreshMeeting = {() => refreshCurrentRange()}
           />
 
+        ): (
+            <div className="col-span-3 white-shadow-bordered-div flex items-center justify-center">
+              <p className="text-gray-500">Brak spotkań do wyświetlenia</p>
+            </div>
         )}
       </div>
     </div>
