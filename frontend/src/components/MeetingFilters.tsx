@@ -3,7 +3,12 @@ import {DateTimeState, Meeting, MeetingRequest, Participant} from "../types/resp
 import { useState} from "react";
 import Slider from "rc-slider";
 import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
-import {faAngleDown, faSignOutAlt} from "@fortawesome/free-solid-svg-icons";
+import {
+    faAngleDown,
+    faMagnifyingGlass,
+    faSignOutAlt,
+    faTimes
+} from "@fortawesome/free-solid-svg-icons";
 import "../style.css";
 import {toISODateTime} from "../utils/formatFunctions.ts";
 interface MeetingFiltersProperties {
@@ -11,9 +16,10 @@ interface MeetingFiltersProperties {
     onLogout: () => void;
     initialParticipants: Participant[];
     filterRequest:MeetingRequest;
+    isMobile?:boolean;
 }
 
-export const MeetingFilters = ({onSearch,initialParticipants,onLogout,filterRequest}: MeetingFiltersProperties) => {
+export const MeetingFilters = ({onSearch, initialParticipants, onLogout, filterRequest, isMobile = false}: MeetingFiltersProperties) => {
 
     const todayDate = new Date();
     const thirtyDaysAgo = new Date();
@@ -22,7 +28,7 @@ export const MeetingFilters = ({onSearch,initialParticipants,onLogout,filterRequ
     const defaultStartDate = thirtyDaysAgo.toISOString().split('T')[0];
     const defaultEndDate = todayDate.toISOString().split('T')[0];
     const defaultTime = todayDate.toTimeString().substring(0, 5);
-
+    const [mobileFiltersOpen, setMobileFiltersOpen] = useState(false);
 
     const [filterData, setFilterData] = useState<MeetingRequest>(filterRequest || {
         per_page: 20,
@@ -138,6 +144,234 @@ export const MeetingFilters = ({onSearch,initialParticipants,onLogout,filterRequ
                 order: 'desc'
             }
         });
+    }
+
+    if (isMobile && !mobileFiltersOpen) {
+        return (
+            <div className="fixed top-2 left-2 z-50">
+                <button
+                    onClick={() => setMobileFiltersOpen(true)}
+                    className=" text-black p-4"
+                >
+                    <FontAwesomeIcon icon={faMagnifyingGlass} size="xl" />
+                </button>
+            </div>
+        );
+    }
+
+    // Mobile filters overlay
+    if (isMobile && mobileFiltersOpen) {
+        return (
+            <div className="fixed inset-0 bg-white z-50 overflow-y-auto p-4">
+                <div className="flex justify-between items-center mb-4">
+                    <h2 className="text-xl font-bold text-blue-900">FILTRY</h2>
+                    <button
+                        onClick={() => setMobileFiltersOpen(false)}
+                        className="text-gray-500 p-2"
+                    >
+                        <FontAwesomeIcon icon={faTimes} size="lg" />
+                    </button>
+                </div>
+
+                <div className="flex flex-col gap-4">
+                    <input
+                        type="text"
+                        placeholder="Wpisz kod lub nazwę spotkania"
+                        className="text-sm text-gray-600 text-center border border-gray-300 rounded-lg p-2 focus:outline-none"
+                        value={filterData.name || ''}
+                        onChange={(e) => setFilterData({...filterData, name: e.target.value})}
+                    />
+
+                    <div>
+                        <label className=" text-sm text-gray-700 mb-1">Od:</label>
+                        <div className="flex gap-2">
+                            <input
+                                type="date"
+                                className="flex-1 text-xs border border-gray-300 rounded-lg p-2"
+                                value={startDateTime.date}
+                                onChange={(e) => setStartDateTime(prev => ({ ...prev, date: e.target.value }))}
+                            />
+                            <input
+                                type="time"
+                                className="flex-1 text-xs border border-gray-300 rounded-lg p-2"
+                                value={startDateTime.time.substring(0,5)}
+                                onChange={(e) => setStartDateTime(prev => ({ ...prev, time: e.target.value }))}
+                            />
+                        </div>
+                    </div>
+
+                    <div>
+                        <label className=" text-sm text-gray-700 mb-1">Do:</label>
+                        <div className="flex gap-2">
+                            <input
+                                type="date"
+                                className="flex-1 text-xs border border-gray-300 rounded-lg p-2"
+                                value={endDateTime.date}
+                                onChange={(e) => setEndDateTime(prev => ({ ...prev, date: e.target.value }))}
+                            />
+                            <input
+                                type="time"
+                                className="flex-1 text-xs border border-gray-300 rounded-lg p-2"
+                                value={endDateTime.time.substring(0,5)}
+                                onChange={(e) => setEndDateTime(prev => ({ ...prev, time: e.target.value }))}
+                            />
+                        </div>
+                    </div>
+
+                    <div>
+                        <label className="block text-sm text-gray-700 mb-1">
+                            Czas trwania: {`${filterData.duration_min || 0}-${filterData.duration_max || 300} min`}
+                        </label>
+                        <Slider
+                            range
+                            min={0}
+                            max={300}
+                            value={[filterData.duration_min || 0, filterData.duration_max || 300]}
+                            onChange={(value: number | number[]) => {
+                                const [min, max] = value as [number, number];
+                                setFilterData({
+                                    ...filterData,
+                                    duration_min: min,
+                                    duration_max: max
+                                })
+                            }}
+                        />
+                    </div>
+
+                    <div>
+                        <label className="block text-sm text-gray-700 mb-1">
+                            Koszt spotkania: {`${filterData.cost_min || 0}-${filterData.cost_max || 5000} zł`}
+                        </label>
+                        <Slider
+                            range
+                            min={0}
+                            max={5000}
+                            value={[filterData.cost_min || 0, filterData.cost_max || 5000]}
+                            onChange={(value: number | number[]) => {
+                                const [min, max] = value as [number, number];
+                                setFilterData({
+                                    ...filterData,
+                                    cost_min: min,
+                                    cost_max: max
+                                })
+                            }}
+                        />
+                    </div>
+
+                    <div>
+                        <label className="block text-sm text-gray-700 mb-1">Osoby</label>
+                        <div className="flex flex-wrap gap-2 mb-2">
+                            {selectedParticipants.map(participant => (
+                                <span
+                                    key={participant.id}
+                                    className="bg-purple-400 text-white rounded px-2 py-1 text-sm flex items-center"
+                                >
+                                    {participant.username}
+                                    <button
+                                        onClick={() => removeParticipant(participant.id)}
+                                        className="ml-1 hover:text-purple-200"
+                                    >
+                                        ×
+                                    </button>
+                                </span>
+                            ))}
+                        </div>
+                        {availableParticipants.length > 0 && (
+                            <select
+                                className="w-full text-sm border border-gray-300 rounded-lg p-2"
+                                onChange={(e) => {
+                                    const participant = availableParticipants.find(p => p.id === parseInt(e.target.value));
+                                    if (participant)
+                                        addParticipant(participant);
+                                }}
+                            >
+                                <option value="">Dodaj uczestnika...</option>
+                                {availableParticipants.map(participant => (
+                                    <option key={participant.id} value={participant.id}>
+                                        {participant.username} ({participant.role_name})
+                                    </option>
+                                ))}
+                            </select>
+                        )}
+                    </div>
+
+                    <div>
+                        <label className="block text-sm text-gray-700 mb-1">Sortowanie</label>
+                        <select
+                            className="text-sm border border-gray-300 rounded-lg p-2 w-full"
+                            value={`${filterData.sort_by?.field}|${filterData.sort_by?.order}`}
+                            onChange={(e) => {
+                                const [field, order] = e.target.value.split('|');
+                                setFilterData({
+                                    ...filterData,
+                                    sort_by: {
+                                        field: field as keyof Meeting,
+                                        order: order as 'asc' | 'desc'
+                                    }
+                                });
+                            }}
+                        >
+                            <option value="start_datetime|desc">Data (malejąco)</option>
+                            <option value="start_datetime|asc">Data (rosnąco)</option>
+                            <option value="name|desc">Nazwa (malejąco)</option>
+                            <option value="name|asc">Nazwa (rosnąco)</option>
+                            <option value="cost|desc">Koszt (malejąco)</option>
+                            <option value="cost|asc">Koszt (rosnąco)</option>
+                            <option value="duration|desc">Czas trwania (malejąco)</option>
+                            <option value="duration|asc">Czas trwania (rosnąco)</option>
+                        </select>
+                    </div>
+
+                    <div className="flex gap-2 mt-4">
+                        <button
+                            className="flex-1 bg-blue-800 text-white rounded-md p-3 text-sm hover:bg-blue-900 transition-colors"
+                            onClick={handleSearch}
+                        >
+                            Zastosuj filtry
+                        </button>
+                        <button
+                            className="flex-1 bg-gray-300 text-gray-800 rounded-md p-3 text-sm hover:bg-gray-400 transition-colors"
+                            onClick={resetFilters}
+                        >
+                            Resetuj
+                        </button>
+                    </div>
+
+                    <div className="mt-4 pt-4 border-t border-gray-200">
+                        <div
+                            className="flex items-center gap-2 text-sm text-gray-600 w-full cursor-pointer"
+                            onClick={() => setUserMenuOpen(!userMenuOpen)}
+                        >
+                            <div className="bg-gray-900 text-white w-10 h-10 rounded-full flex items-center justify-center text-2xl">
+                                {initLetter}
+                            </div>
+                            <div className="flex-1">
+                                <p className="font-bold">{username}</p>
+                                <p className="text-gray-500 text-xs">Zalogowano</p>
+                            </div>
+                            <FontAwesomeIcon
+                                icon={faAngleDown}
+                                className={`p-2 text-2xl transition-transform ${userMenuOpen ? 'transform rotate-180' : ''}`}
+                            />
+                        </div>
+                        {userMenuOpen && (
+                            <div className="bg-blue-100 rounded-md p-2 mt-2">
+                                <button
+                                    className="w-full text-left p-2 hover:bg-gray-100 rounded flex items-center gap-2"
+                                    onClick={() => {
+                                        setUserMenuOpen(false);
+                                        onLogout();
+                                    }}
+                                >
+                                    <FontAwesomeIcon icon={faSignOutAlt}/>
+                                    Wyloguj się
+                                </button>
+                            </div>
+                        )}
+                    </div>
+                </div>
+            </div>
+        );
     }
 
     return (
@@ -327,4 +561,6 @@ export const MeetingFilters = ({onSearch,initialParticipants,onLogout,filterRequ
                 </div>
             </div>
         )
+
+
 };
