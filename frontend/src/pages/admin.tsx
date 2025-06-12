@@ -1,7 +1,15 @@
 import "../style.css";
 import Slider from "rc-slider";
 import "rc-slider/assets/index.css";
-import { faAngleDown, faEye, faEyeSlash, faPenToSquare, faSignOutAlt, faTrashCan } from "@fortawesome/free-solid-svg-icons";
+import {
+  faAngleDown,
+  faCalendar,
+  faEye,
+  faEyeSlash,
+  faPenToSquare,
+  faSignOutAlt,
+  faTrashCan
+} from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import logo from '../assets/logo.png'
 import person from '../assets/person.png'
@@ -10,9 +18,10 @@ import key from '../assets/key.png'
 import eye from '../assets/eye.png'
 import { getInitials, useUserAdminState } from "../components/userAdminHelpers";
 import MobileAdminPanel from "../components/mobileAdmin.tsx";
-
+import {useNavigate} from "react-router-dom";
 export default function AdminPanel() {
   const state = useUserAdminState();
+  const navigate = useNavigate();
 
   return (
     (state.isMobile)?(
@@ -103,6 +112,16 @@ export default function AdminPanel() {
               </div>
               {state.userMenuOpen && (
                 <div className="absolute bottom-full left-0 right-0 bg-blue-100 shadow-lg rounded-md p-2 mb-2 z-10">
+                  <button
+                      className="w-full text-left p-2 hover:bg-gray-100 rounded flex items-center gap-2"
+                      onClick={() => {
+                        state.setUserMenuOpen(false);
+                        navigate("/multiple_meetings");
+                      }}
+                  >
+                    <FontAwesomeIcon icon={faCalendar} />
+                    Strona spotkań
+                  </button>
                   <button
                     className="w-full text-left p-2 hover:bg-gray-100 rounded flex items-center gap-2"
                     onClick={() => {

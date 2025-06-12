@@ -2,7 +2,7 @@ import React, {RefObject, useEffect, useMemo, useRef, useState} from "react";
 import {useLocation, useNavigate} from "react-router-dom";
 import {toast, ToastContainer} from 'react-toastify';
 import logo from '../assets/logo.png'
-import {faSignOutAlt } from "@fortawesome/free-solid-svg-icons";
+import {faGear, faSignOutAlt} from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 
 import "../style.css";
@@ -337,11 +337,18 @@ export default function MultipleMeetingsPage(){
                       <div className="absolute right-0 mt-2 w-40 bg-white shadow-lg rounded-md z-50">
                         <button
                             className="w-full text-left px-4 py-2 text-sm hover:bg-gray-100 flex items-center gap-2"
-                            onClick={handleLogout}
+                            onClick={() =>{ navigate("/admin_panel")}}
                         >
-                          <FontAwesomeIcon icon={faSignOutAlt} />
-                          Wyloguj się
+                          <FontAwesomeIcon icon={faGear} />
+                          Panel Zarządzania
                         </button>
+                        <button
+                        className="w-full text-left px-4 py-2 text-sm hover:bg-gray-100 flex items-center gap-2"
+                        onClick={handleLogout}
+                        >
+                        <FontAwesomeIcon icon={faSignOutAlt} />
+                        Wyloguj się
+                      </button>
                       </div>
                   )}
                 </div>
@@ -452,10 +459,10 @@ export default function MultipleMeetingsPage(){
           </div>
           <hr className="border-gray-300" />
 
-          <div className="grid grid-cols-4 gap-x-4 p-4 h-[80vh] max-h-[80vh]">
-            <div className="h-full flex flex-col">
+          <div className="flex h-[calc(100vh-180px)] overflow-hidden ">
+            <div className="h-[calc(100%-20px)] flex flex-col m-4">
               <div className="white-shadow-bordered-div col-span-1 h-full">
-                <div ref={listContainerRef} className="h-full max-h-[80vh] overflow-y-auto pr-2">
+                <div ref={listContainerRef} className="h-full overflow-y-auto pr-2">
                   <ul>
                     <div className="sticky top-0 bg-white z-10">
                       <li className="pl-2 text-[0.9em] font-bold text-blue-main mb-2">Znalezionych wyników: {filteredMeetings.length}</li>
@@ -464,18 +471,18 @@ export default function MultipleMeetingsPage(){
                     {filteredMeetings.map((m) => (
                         <React.Fragment key={`${m.id}-${new Date(m.date).getTime()}`}>
                           <li
-                              className={`flex justify-between items-center px-2 py-2 rounded-2xl hover:bg-gray-200 cursor-pointer ${m.id === selectedMeetingId ? "bg-blue-100" : ""}`}
+                              className={`flex flex-col sm:flex-row justify-between items-center px-2 py-2 rounded-2xl hover:bg-gray-200 cursor-pointer ${m.id === selectedMeetingId ? "bg-blue-100" : ""}`}
                               onClick={() => handleMeetingSelection(m.id)}
                           >
-                            <div className="whitespace-nowrap overflow-hidden w-full">
-                              <div className="font-medium max-h-min flex flex-row justify-between">
+                            <div className="w-full">
+                              <div className="text-sm 2xl:text-base font-medium flex flex-col max-h-min xl:flex-row justify-between gap-1 xl:gap-2">
                                 <span className="mr-2 truncate max-w-[150px] block">{m.token}</span>
                                 <span className="mr-2 truncate max-w-[150px] block">{m.title}</span>
                               </div>
-                              <div className="text-[1em] text-gray-600 flex justify-between">
-                                <span>{formatDate(m.date)}, {formatTime(new Date(m.date))}</span>
-                                <span>{formatDuration(m.duration)}</span>
-                                <span className="text-custom-teal font-semibold">{m.cost.toFixed(2)} zł</span>
+                              <div className="text-xs 2xl:text-sm text-gray-600 flex flex-col xl:flex-row justify-between gap-1 xl:gap-2 mt-1">
+                                <span className="order-1 sm:order-1">{formatDate(m.date)}, {formatTime(new Date(m.date))}</span>
+                                <span className="order-2 sm:order-2">{formatDuration(m.duration)}</span>
+                                <span className="order-3 sm:order-3 text-custom-teal font-semibold">{m.cost.toFixed(2)} zł</span>
                               </div>
                             </div>
                           </li>

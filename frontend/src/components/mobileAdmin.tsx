@@ -5,7 +5,7 @@ import { faMagnifyingGlass, faSignOutAlt, faEye, faEyeSlash, faPlusCircle, faArr
 import person from '../assets/person.png';
 import dolar from '../assets/dolar.png';
 import key from '../assets/key.png';
-import { getInitials, useUserAdminState } from "../components/userAdminHelpers";
+import { getInitials, useUserAdminState } from "./userAdminHelpers.ts";
 
 export default function MobileAdminPanel() {
   const state = useUserAdminState();

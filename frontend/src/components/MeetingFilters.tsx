@@ -4,13 +4,14 @@ import { useState} from "react";
 import Slider from "rc-slider";
 import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
 import {
-    faAngleDown,
+    faAngleDown, faGear,
     faMagnifyingGlass,
     faSignOutAlt,
     faTimes
 } from "@fortawesome/free-solid-svg-icons";
 import "../style.css";
 import {toISODateTime} from "../utils/formatFunctions.ts";
+import {useNavigate} from "react-router-dom";
 interface MeetingFiltersProperties {
     onSearch: (request: MeetingRequest) => void;
     onLogout: () => void;
@@ -29,7 +30,7 @@ export const MeetingFilters = ({onSearch, initialParticipants, onLogout, filterR
     const defaultEndDate = todayDate.toISOString().split('T')[0];
     const defaultTime = todayDate.toTimeString().substring(0, 5);
     const [mobileFiltersOpen, setMobileFiltersOpen] = useState(false);
-
+    const navigate = useNavigate();
     const [filterData, setFilterData] = useState<MeetingRequest>(filterRequest || {
         per_page: 20,
         page: 1,
@@ -360,6 +361,16 @@ export const MeetingFilters = ({onSearch, initialParticipants, onLogout, filterR
                                     className="w-full text-left p-2 hover:bg-gray-100 rounded flex items-center gap-2"
                                     onClick={() => {
                                         setUserMenuOpen(false);
+                                        navigate("/admin_panel")
+                                    }}
+                                >
+                                    <FontAwesomeIcon icon={faGear}/>
+                                    Panel Zarządzania
+                                </button>
+                                <button
+                                    className="w-full text-left p-2 hover:bg-gray-100 rounded flex items-center gap-2"
+                                    onClick={() => {
+                                        setUserMenuOpen(false);
                                         onLogout();
                                     }}
                                 >
@@ -376,46 +387,46 @@ export const MeetingFilters = ({onSearch, initialParticipants, onLogout, filterR
 
     return (
             <div
-                className="w-1/6 min-h-screen bg-white float-left pt-4 rounded-r-2xl shadow p-4 border border-gray-200 flex flex-col gap-3"
+                className="w-1/6 min-h-screen bg-white float-left pt-4 rounded-r-xs shadow p-4 border border-gray-200 flex flex-col gap-3"
             >
                 <div className="flex justify-center items-center">
-                    <h2 className="font-bold text-[1.5em] text-blue-900">WYSZUKAJ SPOTKANIA</h2>
+                    <h2 className="font-bold text-center text-[1.5em] text-blue-900">WYSZUKAJ SPOTKANIA</h2>
                 </div>
 
                 <input
                     type="text"
                     placeholder="Wpisz kod lub nazwę spotkania"
-                    className="text-sm text-gray-600 text-center border border-gray-300 rounded-lg p-1 focus:outline-none"
+                    className="text-xs xl:text-sm text-gray-600 text-center border border-gray-300 rounded-lg p-1 focus:outline-none"
                     value={filterData.name|| ''}
                     onChange={(e) => setFilterData({...filterData,name: e.target.value})}
                 />
 
-                <div className="flex gap-2">
-                    <label>Od:</label>
-                    <input type="date" className="w-1/2 text-xs border border-gray-300 rounded-lg p-1"
+                <div className="flex flex-col xl:flex-row gap-2">
+                    <label >Od:</label>
+                    <input type="date" className="flex-1 xl:w-1/2 min-w-1/3 text-xs xl:text-sm border border-gray-300 rounded-lg p-1"
                            value={startDateTime.date}
                            onChange={(e) => setStartDateTime(prev => ({ ...prev, date: e.target.value }))}
                     />
-                    <input type="time" className="w-1/2 text-xs border border-gray-300 rounded-lg p-1"
+                    <input type="time" className="flex-1 xl:w-1/2 min-w-1/3 text-xs xl:text-sm border border-gray-300 rounded-lg p-1"
                            value={startDateTime.time.substring(0,5)}
                            onChange={(e) => setStartDateTime(prev => ({ ...prev, time: e.target.value }))}
                     />
                 </div>
-                <div className="flex gap-2">
+                <div className="flex flex-col xl:flex-row gap-2">
                     <label>Do:</label>
-                    <input type="date" className="w-1/2 text-xs border border-gray-300 rounded-lg p-1"
+                    <input type="date" className="w-full xl:w-1/2 min-w-1/3 text-xs xl:text-sm border border-gray-300 rounded-lg p-1"
                            value={endDateTime.date}
                            onChange={(e) => setEndDateTime(prev => ({ ...prev, date: e.target.value }))}
                     />
-                    <input type="time" className="w-1/2 text-xs border border-gray-300 rounded-lg p-1"
+                    <input type="time" className="w-full xl:w-1/2 min-w-1/3 text-xs xl:text-sm border border-gray-300 rounded-lg p-1"
                            value={endDateTime.time.substring(0,5)}
                            onChange={(e) => setEndDateTime(prev => ({ ...prev, time: e.target.value }))}
                     />
                 </div>
 
                 <div>
-                    <label className="text-sm text-gray-700">Czas trwania
-                        <span className="float-end">{` ${filterData.duration_min|| 0}-${filterData.duration_max|| 300} min`}</span>
+                    <label className="text-xs xl:text-sm text-gray-700">Czas trwania
+                        <span className="float-end text-xs xl:text-sm">{` ${filterData.duration_min|| 0}-${filterData.duration_max|| 300} min`}</span>
                     </label>
                     <Slider
                         range
@@ -434,8 +445,8 @@ export const MeetingFilters = ({onSearch, initialParticipants, onLogout, filterR
                 </div>
 
                 <div>
-                    <label className="text-sm text-gray-700">Koszt spotkania
-                        <span className="float-end">{`${filterData.cost_min || 0}-${filterData.cost_max || 5000} zł`}</span>
+                    <label className="text-xs xl:text-sm text-gray-700">Koszt spotkania
+                        <span className="float-end text-xs xl:text-sm">{`${filterData.cost_min || 0}-${filterData.cost_max || 5000} zł`}</span>
                     </label>
                     <Slider
                         range
@@ -453,7 +464,7 @@ export const MeetingFilters = ({onSearch, initialParticipants, onLogout, filterR
                     />
                 </div>
                 <div>
-                    <label className="text-sm text-gray-700">Osoby</label>
+                    <label className="text-xs xl:text-sm text-gray-700">Osoby</label>
                     <div className="flex flex-wrap gap-2 mb-2">
                         {selectedParticipants.map(participant => (
                             <span
@@ -473,7 +484,7 @@ export const MeetingFilters = ({onSearch, initialParticipants, onLogout, filterR
                     </div>
                     {availableParticipants.length && (
                         <select
-                            className="w-full text-sm border border-gray-300 rounded-lg p-1"
+                            className="w-full text-xs xl:text-sm border border-gray-300 rounded-lg p-1"
                             onChange={(e) => {
                                 const participant = availableParticipants.find(p => p.id === parseInt(e.target.value));
                                 if (participant)
@@ -490,8 +501,8 @@ export const MeetingFilters = ({onSearch, initialParticipants, onLogout, filterR
                     )}
                 </div>
                 <div>
-                    <label className="text-sm text-gray-700 mt-2">Sortowanie</label>
-                    <select className="text-sm border border-gray-300 rounded-lg p-1 w-full"
+                    <label className="text-xs xl:text-sm text-gray-700 mt-2">Sortowanie</label>
+                    <select className="text-xs xl:text-sm border border-gray-300 rounded-lg p-1 w-full"
                             value={`${filterData.sort_by?.field}|${filterData.sort_by?.order}`}
                             onChange={(e) => {
                                 const [field, order] = e.target.value.split('|');
@@ -550,8 +561,16 @@ export const MeetingFilters = ({onSearch, initialParticipants, onLogout, filterR
                                 <button className="w-full text-left p-2 hover:bg-gray-100 rounded flex items-center gap-2"
                                 onClick={() => {
                                     setUserMenuOpen(false);
-                                    onLogout();
+                                    navigate("/admin_panel");
                                 }} >
+                                    <FontAwesomeIcon icon={faGear}/>
+                                    Panel Zarządzania
+                                </button>
+                                <button className="w-full text-left p-2 hover:bg-gray-100 rounded flex items-center gap-2"
+                                        onClick={() => {
+                                            setUserMenuOpen(false);
+                                            onLogout();
+                                        }} >
                                     <FontAwesomeIcon icon={faSignOutAlt}/>
                                     Wyloguj się
                                 </button>
