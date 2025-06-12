@@ -74,16 +74,27 @@ const LoginPage: React.FC = () => {
 
   const handleGoogleLogin = async () => {
     try {
+
       const idToken = await signInWithGoogle();
+      
+      setLogin("meetcostwatcher@gmail.com");
+      setPassword("123");
+      
       setIsGoogleLoading(true);
+
+      const credentials = btoa(`${login}:${password}`);
+
       const bodyData = {
         per_page: 1,
         page: 1,
       };
+      
       const response = await fetch(backendURL + "/meetings/sync", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
+          "Authorization": `Basic ${credentials}`, 
+
         },
         body: JSON.stringify(bodyData),
       });
@@ -92,6 +103,7 @@ const LoginPage: React.FC = () => {
         setLoginError(true);
       } else if (response.status === 200) {
         const data = await response.json();
+        
         // TODO: localStorage.set
         navigate("/multiple_meetings");
       }

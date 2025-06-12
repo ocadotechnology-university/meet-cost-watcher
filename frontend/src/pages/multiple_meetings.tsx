@@ -81,7 +81,8 @@ export default function MultipleMeetingsPage(){
     }
     setError(null);
     try{
-      const credentials = localStorage.getItem('credentials');
+      const credentials = btoa(`meetcostwatcher@gmail.com:123`);
+      
 
       const response = await fetch(backendURL+"/meetings/all", {
         method: "POST",

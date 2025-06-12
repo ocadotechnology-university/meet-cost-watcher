@@ -2,7 +2,7 @@ import datetime
 import os
 import json
 from dotenv import load_dotenv
-from app.models import Meeting, User
+from app.models import Meeting, User, meeting_users
 from app import db
 
 from google.oauth2.credentials import Credentials
@@ -51,7 +51,15 @@ def authorize():
 
 
 
-
+def calculate_meeting_cost(participiants, duration) -> float:
+    total_cost = 0.0
+    
+    for participant in participiants:
+        hours = duration / 60
+        participant_cost = hours * participant.hourly_cost
+        total_cost += participant_cost
+    
+    return round(total_cost, 2)
 
 
 
@@ -112,12 +120,14 @@ def save_single_event(event):
     meeting_users = get_or_create_users(participants)
     meeting_users.append(owner)
 
+    duration = (end - start).seconds // 60
+
     meeting = Meeting(
         name=name,
         start_datetime=start,
-        duration=(end - start).seconds // 60,
+        duration=duration,
         room_name=room,
-        cost=0.0,
+        cost=calculate_meeting_cost(meeting_users, duration),
         token=meet_token,
         created_at=created_at,
         description=description,
@@ -149,7 +159,7 @@ def get_or_create_users(participants_emails):
                 hourly_cost=0.0,
                 app_role="EMPLOYEE",
             )
-            user.hash_password("123")
+            # user.hash_password("123")
             db.session.add(user)
             db.session.commit()
             print(f'* Added user: "{email}"')
@@ -182,5 +192,15 @@ def save_meetings_from_calendar():
         return
 
     print(f"Get {len(events)} events from Google Calendar. Uploading to database...\n")
+    try:
+        db.session.execute(meeting_users.delete())
+        db.session.query(Meeting).delete()
+        db.session.commit()
+        print("✔ Usunięto wszystkie spotkania i ich powiązania z użytkownikami.")
+    except Exception as e:
+        db.session.rollback()
+        print(f"❌ Błąd podczas czyszczenia danych: {e}")
+
+    db.session.commit()
     new_num = process_events(events)
     print(f"Added {new_num} meetings. {len(events) - new_num} already exist in the database.\n")
