@@ -6,6 +6,7 @@ import eye from "../assets/eye.png";
 import { useContext } from "react";
 import { LoginContext } from "../context/LoginContext.tsx";
 // import {MeetingResponse} from "../types/responseTypes.ts";
+import { backendURL } from "../main.tsx";
 import "../style2.css";
 import { signInWithGoogle } from "../../firebase.ts"; // Adjust the import based on your Firebase setup
 
@@ -16,7 +17,6 @@ const LoginPage: React.FC = () => {
   const [isGoogleLoading, setIsGoogleLoading] = useState(false);
 
   const navigate = useNavigate();
-  const backendURL = "http://127.0.0.1:5000";
 
   const togglePassword = () => {
     setPasswordVisible(!passwordVisible);
@@ -46,6 +46,24 @@ const LoginPage: React.FC = () => {
       } else if (response.status === 200) {
         localStorage.setItem("credentials", credentials);
         localStorage.setItem("username", login);
+
+        const users = await fetch(backendURL+"/users/", {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Basic ${credentials}`, 
+          }
+        });
+        if(response.ok) {
+          const res = await users.json();
+          const usersData = res.value || [];
+          type User = { username: string; app_role?: string };
+          const found = usersData.find((u: User) => u.username === login);
+          const app_role = found ? found.app_role : "employee";
+          localStorage.setItem('app_role', app_role);
+        } else {
+          localStorage.setItem('app_role', "employee");
+        }
         navigate("/multiple_meetings");
       }
     } catch (error) {

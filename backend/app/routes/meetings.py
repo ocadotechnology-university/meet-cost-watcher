@@ -150,7 +150,6 @@ class MeetingsAll(Resource):
         user = auth.current_user()
         data = request.get_json()
         filters = None
-
         if data:
             try:
                 filters = MeetingsFilterParser(**data)
@@ -171,7 +170,6 @@ class MeetingsAll(Resource):
 @api.route("/single/<string:token>")
 class MeetingsSingle(Resource):
 
-    @api.doc(security="basicAuth")
     @api.response(
         200,
         "Success",

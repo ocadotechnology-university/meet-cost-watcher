@@ -9,10 +9,6 @@ from sqlalchemy import func
 from datetime import timezone
 
 
-def helper(query):
-    print(len(db.session.execute(query).scalars().all()))
-
-
 @jsonify_return
 def meetings_single_resolver(token: str):
 
@@ -59,7 +55,6 @@ def meetings_single_resolver(token: str):
 
 @jsonify_return
 def meetings_all_resolver(user: User, filters: Optional[MeetingsFilters] = None):
-
     query = (
         db.select(Meeting)
         .distinct()
@@ -73,20 +68,17 @@ def meetings_all_resolver(user: User, filters: Optional[MeetingsFilters] = None)
             func.coalesce(func.sum(Meeting.cost), 0)
             + func.coalesce(func.sum(AdditionalCost.cost), 0)
         )
+        .select_from(Meeting)
         .outerjoin(AdditionalCost, Meeting.id == AdditionalCost.meeting_id)
-        .outerjoin(meeting_users, Meeting.id == meeting_users.c.meeting_id)
-        .outerjoin(User, meeting_users.c.user_id == User.id)
-        .distinct()
     )
 
     if user.app_role == AppRoles.EMPLOYEE:
         query = query.filter(
             (meeting_users.c.user_id == user.id) | (meeting_users.c.user_id == None)
         )
-        cost_query = cost_query.filter(
-            (meeting_users.c.user_id == user.id) | (meeting_users.c.user_id == None)
-        )
-
+        cost_query = cost_query.join(
+            meeting_users, Meeting.id == meeting_users.c.meeting_id
+        ).filter(meeting_users.c.user_id == user.id)
     if filters:
         for name, value in filters.__dict__.items():
 
@@ -135,12 +127,16 @@ def meetings_all_resolver(user: User, filters: Optional[MeetingsFilters] = None)
     meetings = []
     total_cost = cost_query.scalar() or 0
 
-    pagination_result = db.paginate(
-        query.distinct(Meeting.id),
-        page=filters.page,
-        per_page=filters.per_page,
-        max_per_page=200,
-    )
+    try:
+        pagination_result = db.paginate(
+            query.distinct(Meeting.id),
+            page=filters.page,
+            per_page=filters.per_page,
+            max_per_page=200,
+        )
+    except Exception as e:
+        return {"total_cost": round(total_cost, 2), "meetings": []}
+
     for meeting in pagination_result.items:
         meeting_json = {
             "id": meeting.id,
