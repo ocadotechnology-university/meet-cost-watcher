@@ -179,8 +179,6 @@ def save_meetings_from_calendar():
         service.events()
         .list(
             calendarId="primary",
-            timeMax=now,
-            maxResults=100,
             singleEvents=True,
         )
         .execute()
@@ -192,14 +190,13 @@ def save_meetings_from_calendar():
         return
 
     print(f"Get {len(events)} events from Google Calendar. Uploading to database...\n")
+    
     try:
         db.session.execute(meeting_users.delete())
         db.session.query(Meeting).delete()
         db.session.commit()
-        print("✔ Usunięto wszystkie spotkania i ich powiązania z użytkownikami.")
     except Exception as e:
         db.session.rollback()
-        print(f"❌ Błąd podczas czyszczenia danych: {e}")
 
     db.session.commit()
     new_num = process_events(events)
