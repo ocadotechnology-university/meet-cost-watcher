@@ -48,7 +48,6 @@ export function useUserAdminState() {
   const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
   const navigate = useNavigate();
   const [mobileView, setMobileView] = useState<"list" | "search" | "add" | "edit" | "details">("list");
-
   // Pobieranie użytkowników (brak paginacji, bo backend zwraca wszystkich)
   const fetchUsers = async () => {
     try {
@@ -366,5 +365,6 @@ export function useUserAdminState() {
     showNoAdmin,
     clearFilters,
     onLogout,
+    navigate
   };
 }
