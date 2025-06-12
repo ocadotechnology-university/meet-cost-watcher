@@ -1,11 +1,20 @@
 import Slider from "rc-slider";
 import "rc-slider/assets/index.css";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faMagnifyingGlass, faSignOutAlt, faEye, faEyeSlash, faPlusCircle, faArrowLeft, faXmark } from "@fortawesome/free-solid-svg-icons";
+import {
+    faMagnifyingGlass,
+    faSignOutAlt,
+    faEye,
+    faEyeSlash,
+    faPlusCircle,
+    faArrowLeft,
+    faXmark,
+    faCalendar
+} from "@fortawesome/free-solid-svg-icons";
 import person from '../assets/person.png';
 import dolar from '../assets/dolar.png';
 import key from '../assets/key.png';
-import { getInitials, useUserAdminState } from "../components/userAdminHelpers";
+import { getInitials, useUserAdminState } from "./userAdminHelpers.ts";
 
 export default function MobileAdminPanel() {
   const state = useUserAdminState();
@@ -44,7 +53,7 @@ export default function MobileAdminPanel() {
             <input
               type="text"
               placeholder="Wpisz Imię i Nazwisko"
-              className="w-full p-2 mb-4 border rounded"
+              className="text-sm text-gray-600 text-center border border-gray-300 rounded-lg p-2 focus:outline-none w-full"
               value={state.searchName}
               onChange={e => state.setSearchName(e.target.value)}
             />
@@ -71,9 +80,9 @@ export default function MobileAdminPanel() {
               />
             </div>
             <div className="mb-4">
-              <label className="block mb-1">Sortowanie</label>
+              <label className="block text-sm text-gray-700 mb-1">Sortowanie</label>
               <select
-                className="w-full p-2 border rounded"
+                className="text-sm border border-gray-300 rounded-lg p-2 w-full"
                 value={state.sortBy}
                 onChange={e => state.setSortBy(e.target.value as "hourly_cost_asc" | "hourly_cost_desc")}
               >
@@ -82,9 +91,9 @@ export default function MobileAdminPanel() {
               </select>
             </div>
             <div className="mb-4">
-              <label className="block mb-1">Rola</label>
+              <label className="block text-sm text-gray-700 mb-1">Rola</label>
               <select
-                className="w-full p-2 border rounded"
+                className="text-sm border border-gray-300 rounded-lg p-2 w-full"
                 value={state.roleFilter}
                 onChange={e => state.setRoleFilter(e.target.value)}
               >
@@ -122,7 +131,7 @@ export default function MobileAdminPanel() {
                   type="text"
                   name="username"
                   placeholder="Imię i Nazwisko"
-                  className="p-2 border rounded w-full"
+                  className="p-2 border border-gray-300 rounded w-full"
                   value={state.newUser.username}
                   onChange={state.handleNewUserChange}
                   required
@@ -135,7 +144,7 @@ export default function MobileAdminPanel() {
                       type="email"
                       name="email"
                       placeholder="Funkcja Niedostępna"
-                      className="p-2 border rounded w-full"
+                      className="p-2 border border-gray-300 rounded w-full"
                       disabled
                     />
                   </div>
@@ -153,7 +162,7 @@ export default function MobileAdminPanel() {
                   type={state.passwordVisible ? "password" : "text"}
                   name="password"
                   placeholder="Hasło"
-                  className="p-2 border rounded w-full"
+                  className="p-2 border border-gray-300 rounded w-full"
                   value={state.newUser.password}
                   onChange={state.handleNewUserChange}
                   required
@@ -165,7 +174,7 @@ export default function MobileAdminPanel() {
                   type="number"
                   name="hourly_cost"
                   placeholder="Wypłata"
-                  className="p-2 border rounded w-full"
+                  className="p-2 border border-gray-300 rounded w-full"
                   value={state.newUser.hourly_cost}
                   onChange={state.handleNewUserChange}
                   required
@@ -179,7 +188,7 @@ export default function MobileAdminPanel() {
                   type="text"
                   name="role_name"
                   placeholder="Wpisz nazwę roli"
-                  className="p-2 border rounded w-full"
+                  className="p-2 border border-gray-300 rounded w-full"
                   value={state.newUser.role_name}
                   onChange={state.handleNewUserChange}
                   required
@@ -190,7 +199,7 @@ export default function MobileAdminPanel() {
                 <label className="block mb-1">Uprawnienia</label>
                 <select
                   name="app_role"
-                  className="p-2 border rounded w-full"
+                  className="p-2 border border-gray-300 rounded w-full"
                   value={state.newUser.app_role}
                   onChange={state.handleNewUserChange}
                   required
@@ -237,7 +246,7 @@ export default function MobileAdminPanel() {
                   type="text"
                   name="username"
                   placeholder="Imię i Nazwisko"
-                  className="p-2 border rounded w-full"
+                  className="p-2 border border-gray-300 rounded w-full"
                   value={state.newUser.username}
                   onChange={state.handleNewUserChange}
                   required
@@ -251,7 +260,7 @@ export default function MobileAdminPanel() {
                       type="email"
                       name="email"
                       placeholder="Funkcja Niedostępna"
-                      className="p-2 border rounded w-full"
+                      className="p-2 border border-gray-300 rounded w-full"
 
                   value={state.newUser.username}
                       disabled
@@ -272,7 +281,7 @@ export default function MobileAdminPanel() {
                   type={state.passwordVisible ? "password" : "text"}
                   name="password"
                   placeholder="Pozostaw puste, jeśli bez zmiany"
-                  className="p-2 border rounded w-full"
+                  className="p-2 border border-gray-300 rounded w-full"
                   value={state.newUser.password}
                   onChange={state.handleNewUserChange}
                   required={false}
@@ -284,7 +293,7 @@ export default function MobileAdminPanel() {
                   type="number"
                   name="hourly_cost"
                   placeholder="Wypłata"
-                  className="p-2 border rounded w-full"
+                  className="p-2 border border-gray-300 rounded w-full"
                   value={state.newUser.hourly_cost}
                   onChange={state.handleNewUserChange}
                   required
@@ -298,7 +307,7 @@ export default function MobileAdminPanel() {
                   type="text"
                   name="role_name"
                   placeholder="Wpisz nazwę roli"
-                  className="p-2 border rounded w-full"
+                  className="p-2 border border-gray-300 rounded w-full"
                   value={state.newUser.role_name}
                   onChange={state.handleNewUserChange}
                   required
@@ -309,7 +318,7 @@ export default function MobileAdminPanel() {
                 <label className="block mb-1">Uprawnienia</label>
                 <select
                   name="app_role"
-                  className="p-2 border rounded w-full"
+                  className="p-2 border border-gray-300 rounded w-full"
                   value={state.newUser.app_role}
                   onChange={state.handleNewUserChange}
                   required
@@ -357,23 +366,23 @@ export default function MobileAdminPanel() {
             </div>
             <div className="text-xl font-bold">{state.selectedUser.username}</div>
             <div className="text-gray-500 mb-4">{state.selectedUser.email || "temp@mail.xd"}</div>
-            <div className="w-full grid grid-cols-1 gap-4">
-            <hr className=""></hr>
-              <div className="white-shadow-bordered-div little-grid-box text-center">
+            <div className="w-full grid grid-cols-1 gap-4 h-fit">
+            <hr className="gray-line"></hr>
+              <div className="white-shadow-bordered-div little-grid-box text-center h-fit">
                     <img src={dolar} alt="Dolar" className="icon-positioning" />
-                    <p className="text-3xl font-bold text-custom-teal">{state.selectedUser?.hourly_cost !== undefined && state.selectedUser?.hourly_cost !== null
+                    <p className="text-xl font-bold text-custom-teal">{state.selectedUser?.hourly_cost !== undefined && state.selectedUser?.hourly_cost !== null
                       ? `${Number(state.selectedUser.hourly_cost).toFixed(2)}zł /h`
                       : "-"}</p>
                     <p className="text-lg">Wypłata</p>
                   </div>
-                  <div className="white-shadow-bordered-div little-grid-box text-center">
+                  <div className="white-shadow-bordered-div little-grid-box text-center h-fit">
                     <img src={person} alt="Dolar" className="icon-positioning" />
-                    <p className="text-3xl font-bold">{state.selectedUser?.role_name || "-"}</p>
+                    <p className="text-xl font-bold">{state.selectedUser?.role_name || "-"}</p>
                     <p className="text-lg">Rola</p>
                   </div>
-                  <div className="white-shadow-bordered-div little-grid-box text-center">
+                  <div className="white-shadow-bordered-div little-grid-box text-center h-fit">
                     <img src={key} alt="Key" className="icon-positioning" />
-                    <p className="text-3xl font-bold">{state.selectedUser?.app_role || "-"}</p>
+                    <p className="text-xl font-bold">{state.selectedUser?.app_role || "-"}</p>
                     <p className="text-lg">Uprawnienia</p>
                   </div>
             </div>
@@ -424,18 +433,18 @@ export default function MobileAdminPanel() {
 function topMenu(state: ReturnType<typeof useUserAdminState>) {
     return(
         <div className="sticky top-0 bg-white">
-            <div className="flex justify-between items-center p-4 border-b ">
+            <div className="flex justify-between items-center p-4 ">
                 {state.mobileView === "list" ? (
-                    <FontAwesomeIcon icon={faMagnifyingGlass} className="text-5xl" onClick={() => state.setMobileView("search")} />
+                    <FontAwesomeIcon icon={faMagnifyingGlass} className="text-4xl" onClick={() => state.setMobileView("search")} />
                 ) : (state.mobileView === "search" || state.mobileView === "details") ? (
-                    <FontAwesomeIcon icon={faArrowLeft} className="text-5xl" onClick={() => state.setMobileView("list")} />
+                    <FontAwesomeIcon icon={faArrowLeft} className="text-4xl" onClick={() => state.setMobileView("list")} />
                 ) : (state.mobileView === "add") ? (
-                    <FontAwesomeIcon icon={faXmark} className="text-6xl" onClick={() => state.setMobileView("list")} />
+                    <FontAwesomeIcon icon={faXmark} className="text-4xl" onClick={() => state.setMobileView("list")} />
                 ) : (state.mobileView === "edit") ? (
-                    <FontAwesomeIcon icon={faXmark} className="text-6xl" onClick={() => state.setMobileView("details")} />
+                    <FontAwesomeIcon icon={faXmark} className="text-4xl" onClick={() => state.setMobileView("details")} />
                 ) : ("")}
                 <div className="text-center">
-                <span className="text-4xl font-semibold text-blue-800">
+                <span className="text-3xl font-semibold text-blue-800">
                     {state.mobileView === "list" || state.mobileView === "details"
                         ? "PRZEGLĄDAJ"
                         : state.mobileView === "search"
@@ -450,37 +459,53 @@ function topMenu(state: ReturnType<typeof useUserAdminState>) {
                 <p className="text-center text-lg">Jesteś w: <b>{localStorage.getItem("app_role")}</b></p>
                 )}
                 </div>
-                <span
-                className="text-4xl rounded-full bg-gray-800 text-white min-w-16 min-h-16 flex items-center justify-center cursor-pointer relative"
-                onClick={() => state.setUserMenuOpen(!state.userMenuOpen)}
-                >
-                {state.initLetter}
-                {state.userMenuOpen && (
-                    <div className="absolute right-0 top-full mt-2 bg-blue-400 shadow-lg rounded-md p-2 z-10 min-w-[140px]">
-                    <button
-                        className="w-full text-left p-2 rounded flex items-center gap-2 text-nowrap"
-                        onClick={() => {
-                        state.setUserMenuOpen(false);
-                        state.onLogout();
-                        }}
-                    >
-                        <FontAwesomeIcon icon={faSignOutAlt} />
-                        Wyloguj się
-                    </button>
+                <div className=" flex items-center gap-2">
+                    <div className="relative">
+                        <button
+                            className="bg-gray-900 text-white w-10 h-10 rounded-full flex items-center justify-center text-xl"
+                            onClick={() => state.setUserMenuOpen(!state.userMenuOpen)}
+                            >
+                            {state.initLetter}
+                        </button>
+                        {state.userMenuOpen && (
+                            <div className="absolute right-0 mt-2 w-40 bg-white text-black shadow-lg rounded-md z-50">
+                                <button
+                                    className="w-full text-left px-4 py-2 text-sm hover:bg-gray-100 flex items-center gap-2"
+                                    onClick={() => {
+                                        state.setUserMenuOpen(false);
+                                        state.navigate("/multiple_meetings")
+                                    }}
+                                >
+                                    <FontAwesomeIcon icon={faCalendar} />
+                                    Strona Spotkań
+                                </button>
+                            <button
+                                className="w-full text-left px-4 py-2 text-sm hover:bg-gray-100 flex items-center gap-2"
+                                onClick={() => {
+                                state.setUserMenuOpen(false);
+                                state.onLogout();
+                                }}
+                            >
+                                <FontAwesomeIcon icon={faSignOutAlt} />
+                                Wyloguj się
+                            </button>
+                            </div>
+                        )}
+
                     </div>
-                )}
-                </span>
+                </div>
             </div>
+            <hr className="gray-line md-2" />
             {state.mobileView === "list" && (
                 <div>
                     <div className="flex justify-between">
-                        <div className="p-2 text-m font-semibold text-blue-600">Użytkownicy: {state.filteredUsers.length}</div>
+                        <div className="p-2 text-m px-4 font-semibold text-blue-main">Użytkownicy: {state.filteredUsers.length}</div>
 
                         {state.isAdmin && (
                             <button
                                 onClick={() => { state.setMobileView("add"); state.setSelectedUser(null); 
                                 }}
-                                className="float-end text-white bg-blue-500 border-blue-500 border-2 rounded-full mr-2 my-auto cursor-pointer w-6 h-6 flex items-center justify-center">
+                                className="float-end text-white pr-6 rounded-full mr-2 my-auto cursor-pointer w-6 h-6 flex items-center justify-center">
                                 <FontAwesomeIcon icon={faPlusCircle} className=" text-white bg-black border-black border-2 rounded-full  cursor-pointer" />
                             </button>
                         )}

@@ -2,6 +2,8 @@ import React, {RefObject, useEffect, useMemo, useRef, useState} from "react";
 import {useLocation, useNavigate} from "react-router-dom";
 import {toast, ToastContainer} from 'react-toastify';
 import logo from '../assets/logo.png'
+import {faGear, faSignOutAlt} from "@fortawesome/free-solid-svg-icons";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 
 import "../style.css";
 
@@ -11,12 +13,16 @@ import {MeetingFilters} from "../components/MeetingFilters.tsx"
 import MeetingDetails from "../components/MeetingDetails.tsx";
 import {formatDate, formatDuration, formatTime, toISODateTime} from "../utils/formatFunctions.ts";
 import {useContainerScroll} from "../hooks/infiniteScroll.ts";
+import { useIsMobile } from "../hooks/useIsMobile";
+
 import { backendURL } from "../main.tsx";
 
 export default function MultipleMeetingsPage(){
 
   const perPage = 20;
   const [initialLoading, setInitialLoading] = useState(true);
+  const isMobile = useIsMobile();
+
   const today = new Date();
   const monthAgo = new Date();
   monthAgo.setDate(today.getDate() - 30);
@@ -43,6 +49,11 @@ export default function MultipleMeetingsPage(){
   const location = useLocation();
   const navigate = useNavigate();
   const hasFetchedInitialData = useRef(false);
+  const [showDetails, setShowDetails] = useState(false);
+  const username = localStorage.getItem('username');
+  const initLetter = username ? username.charAt(0).toUpperCase() : '';
+  const [userMenuOpen, setUserMenuOpen] = useState(false);
+
 
   useEffect(() => {
     if (!hasFetchedInitialData.current) {
@@ -263,6 +274,7 @@ export default function MultipleMeetingsPage(){
 
   const handleMeetingSelection = (id: number) => {
     setSelectedMeetingId(id === selectedMeetingId ? null : id);
+    setShowDetails(true);
   };
 
   const filteredMeetings = useMemo(() => {
@@ -293,96 +305,226 @@ export default function MultipleMeetingsPage(){
     );
   }
 
-  return (
-    <div className="bg-[#f6f6f6] min-h-screen min-w-screen text-gray-900 overflow-hidden">
-      <ToastContainer position="bottom-right" autoClose={3000} />
-      <MeetingFilters
-        onSearch={handleSearch}
-        initialParticipants={getUniqueParticipants(meetingsList)}
-        onLogout={handleLogout}
-        filterRequest={currentRequest}
-      />
+  if(isMobile)
+  {
+    return (
+        <div className="bg-[#f6f6f6] min-h-screen min-w-screen text-gray-900 overflow-hidden">
+          <ToastContainer position="bottom-right" autoClose={3000} />
+          <MeetingFilters
+              onSearch={handleSearch}
+              initialParticipants={getUniqueParticipants(meetingsList)}
+              onLogout={handleLogout}
+              filterRequest={currentRequest}
+              isMobile={isMobile}
+          />
 
-      {/* Central part of the page */}
-      <div className="text-center p-6">
-        <h1 className="text-6xl font-normal text-blue-main">{meetingsCost.toFixed(2)} zł</h1>
-        <p className="text-lg">CAŁKOWITY KOSZT WYBRANYCH SPOTKAŃ</p>
-        <p className="text-md">{new Date(currentRequest.start_min ? currentRequest.start_min : '').toLocaleDateString()} - {new Date(currentRequest.start_max ? currentRequest.start_max : '').toLocaleDateString()}</p>
-        <div
-            style={{ backgroundImage: `url(${logo})` }}
-            className="top-6 right-6 absolute object-cover w-[6em] h-[6em] rounded-2xl bg-size-[130%] box-border overflow-hidden bg-center bg-no-repeat ">
-        </div>
-      </div>
-      <hr className="border-gray-300" />
+          {/* Mobile view */}
 
-      {/*List of meetings*/}
-      <div className="grid grid-cols-4 gap-x-4 p-4 h-[80vh] max-h-[80vh]">
-        <div className="h-full flex flex-col">
-          <div className="white-shadow-bordered-div col-span-1 h-full">
-            <div ref={listContainerRef} className="h-full max-h-[80vh] overflow-y-auto pr-2">
-              <ul>
-                <div className="sticky top-0 bg-white z-10">
-                  <li className="pl-2 text-[0.9em] font-bold text-blue-main mb-2">Znalezionych wyników: {filteredMeetings.length}</li>
-                  <hr className="gray-line mx-2" />
-                </div>
-                {filteredMeetings.map((m) => (
-                  <React.Fragment key={`${m.id}-${new Date(m.date).getTime()}`}>
-                    <li
-                      className={`flex justify-between items-center px-2 py-2 rounded-2xl hover:bg-gray-200 cursor-pointer ${m.id === selectedMeetingId ? "bg-blue-100" : ""}`}
-                      onClick={() => handleMeetingSelection(m.id)}
-                    >
-                      <div className="whitespace-nowrap overflow-hidden w-full">
-                        <div className="font-medium max-h-min flex flex-row justify-between">
-                          <span className="mr-2">{m.token}</span>
-                          <span >{m.title}</span>
-                        </div>
-                        <div className="text-[1em] text-gray-600 flex justify-between">
-                          <span>{formatDate(m.date)}, {formatTime(new Date(m.date))}</span>
-                          <span> {formatDuration(m.duration)}</span>
-                          <span className="text-custom-teal font-semibold">{m.cost.toFixed(2)} zł</span>
-                        </div>
-
+            {/* Header with cost */}
+            <div className="text-center p-4">
+              <h1 className="text-4xl mt-4 font-normal text-blue-main">{meetingsCost.toFixed(2)} zł</h1>
+              <p className="text-sm">CAŁKOWITY KOSZT WYBRANYCH SPOTKAŃ</p>
+              <p className="text-xs">{new Date(currentRequest.start_min ? currentRequest.start_min : '').toLocaleDateString()} - {new Date(currentRequest.start_max ? currentRequest.start_max : '').toLocaleDateString()}</p>
+              <div className="absolute top-4 right-4 flex items-center gap-2">
+                <div className="relative">
+                  <button
+                      onClick={() => setUserMenuOpen(!userMenuOpen)}
+                      className="bg-gray-900 text-white w-10 h-10 rounded-full flex items-center justify-center text-xl"
+                  >
+                    {initLetter}
+                  </button>
+                  {userMenuOpen && (
+                      <div className="absolute right-0 mt-2 w-40 bg-white shadow-lg rounded-md z-50">
+                        <button
+                            className="w-full text-left px-4 py-2 text-sm hover:bg-gray-100 flex items-center gap-2"
+                            onClick={() =>{ navigate("/admin_panel")}}
+                        >
+                          <FontAwesomeIcon icon={faGear} />
+                          Panel Zarządzania
+                        </button>
+                        <button
+                        className="w-full text-left px-4 py-2 text-sm hover:bg-gray-100 flex items-center gap-2"
+                        onClick={handleLogout}
+                        >
+                        <FontAwesomeIcon icon={faSignOutAlt} />
+                        Wyloguj się
+                      </button>
                       </div>
-                    </li>
-                    <hr className="gray-line mx-2" />
-                  </React.Fragment>
-                ))}
-                {isLoading && (
-                    <div className="flex justify-center py-4">
-                      <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500"></div>
-                    </div>
-                )}
-                {!hasMore && !isLoading && (
-                    <div className="text-center py-4 text-gray-500">
-                      To już wszystkie spotkania
-                    </div>
-                )}
-                {error && (
-                    <div className="text-center py-4 text-gray-500">
-                      Błąd ładowania, spróbuj później!
-                    </div>
-                )}
-              </ul>
+                  )}
+                </div>
+              </div>
+
             </div>
+            <hr className="border-gray-300" />
+
+            {/* Toggle between list and details */}
+            {!showDetails ? (
+                <div className="h-[calc(100vh-180px)] overflow-y-auto p-2">
+                  <div className="white-shadow-bordered-div col-span-1 h-full">
+                    <div ref={listContainerRef} className="h-full max-h-[80vh] overflow-y-auto pr-2">
+                      <ul>
+                        <div className="sticky top-0 bg-white z-10 p-2">
+                          <p className="text-sm font-bold text-blue-main">Znalezionych wyników: {filteredMeetings.length}</p>
+                          <hr className="gray-line my-2" />
+                        </div>
+
+                        {filteredMeetings.map((m) => (
+                            <React.Fragment key={`${m.id}-${new Date(m.date).getTime()}`}>
+                              <li
+                                  className={`flex flex-col p-2 rounded-2xl hover:bg-gray-200 cursor-pointer ${m.id === selectedMeetingId ? "bg-blue-100" : ""}`}
+                                  onClick={() => handleMeetingSelection(m.id)}
+                              >
+                                <div className="flex justify-between">
+                                  <span className="font-medium text-sm truncate max-w-[75%]" >{m.title}</span>
+                                  <span className="text-custom-teal font-semibold text-sm">{m.cost.toFixed(2)} zł</span>
+                                </div>
+                                <div className="text-xs text-gray-600">{m.token}</div>
+                                <div className="flex justify-between text-xs text-gray-600 mt-1">
+                                  <span>{formatDate(m.date)}, {formatTime(new Date(m.date))}</span>
+                                  <span>{formatDuration(m.duration)}</span>
+                                </div>
+                              </li>
+                              <hr className="gray-line mx-2" />
+                            </React.Fragment>
+                        ))}
+                        {isLoading && (
+                            <div className="flex justify-center py-4">
+                              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500"></div>
+                            </div>
+                        )}
+                        {!hasMore && !isLoading && (
+                            <div className="text-center py-4 text-gray-500 text-sm">
+                              To już wszystkie spotkania
+                            </div>
+                        )}
+                        {error && (
+                            <div className="text-center py-4 text-gray-500 text-sm">
+                              Błąd ładowania, spróbuj później!
+                            </div>
+                        )}
+                      </ul>
+                    </div>
+                  </div>
+                </div>
+            ) : (
+                <div className="h-[calc(100vh-180px)] overflow-y-auto p-2">
+                  <button
+                      onClick={() => setShowDetails(false)}
+                      className="mb-2 flex items-center text-blue-main"
+                  >
+                    <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-1" viewBox="0 0 20 20" fill="currentColor">
+                      <path fillRule="evenodd" d="M9.707 16.707a1 1 0 01-1.414 0l-6-6a1 1 0 010-1.414l6-6a1 1 0 011.414 1.414L5.414 9H17a1 1 0 110 2H5.414l4.293 4.293a1 1 0 010 1.414z" clipRule="evenodd" />
+                    </svg>
+                    Powrót do listy
+                  </button>
+                  {selectedMeeting ? (
+                      <MeetingDetails
+                          meeting={selectedMeeting}
+                          onNewCost={handleNewCost}
+                          onEditCost={handleEditCost}
+                          onDeleteCost={handleDeleteCost}
+                          refreshMeeting={() => refreshCurrentRange()}
+                          isMobile={true}
+                      />
+                  ) : (
+                      <div className="flex items-center justify-center h-full">
+                        <p className="text-gray-500">Brak spotkań do wyświetlenia</p>
+                      </div>
+                  )}
+                </div>
+            )}
+          </div>
+
+    );
+  } else
+  return(
+          <div className="bg-[#f6f6f6] min-h-screen min-w-screen text-gray-900 overflow-hidden">
+            <ToastContainer position="bottom-right" autoClose={3000} />
+            <MeetingFilters
+                onSearch={handleSearch}
+                initialParticipants={getUniqueParticipants(meetingsList)}
+                onLogout={handleLogout}
+                filterRequest={currentRequest}
+            />
+        {/* Desktop view */}
+
+          <div className="text-center p-6">
+            <h1 className="text-6xl font-normal text-blue-main">{meetingsCost.toFixed(2)} zł</h1>
+            <p className="text-lg">CAŁKOWITY KOSZT WYBRANYCH SPOTKAŃ</p>
+            <p className="text-md">{new Date(currentRequest.start_min ? currentRequest.start_min : '').toLocaleDateString()} - {new Date(currentRequest.start_max ? currentRequest.start_max : '').toLocaleDateString()}</p>
+            <div
+                style={{ backgroundImage: `url(${logo})` }}
+                className="top-6 right-6 absolute object-cover w-[6em] h-[6em] rounded-2xl bg-size-[130%] box-border overflow-hidden bg-center bg-no-repeat ">
+            </div>
+          </div>
+          <hr className="border-gray-300" />
+
+          <div className="flex h-[calc(100vh-180px)] overflow-hidden ">
+            <div className="h-[calc(100%-20px)] min-w-[25%] flex flex-col m-4">
+              <div className="white-shadow-bordered-div col-span-1 h-full">
+                <div ref={listContainerRef} className="h-full overflow-y-auto pr-2">
+                  <ul>
+                    <div className="sticky top-0 bg-white z-10">
+                      <li className="pl-2 text-[0.9em] font-bold text-blue-main mb-2">Znalezionych wyników: {filteredMeetings.length}</li>
+                      <hr className="gray-line mx-2" />
+                    </div>
+                    {filteredMeetings.map((m) => (
+                        <React.Fragment key={`${m.id}-${new Date(m.date).getTime()}`}>
+                          <li
+                              className={`flex flex-col sm:flex-row justify-between items-center px-2 py-2 rounded-2xl hover:bg-gray-200 cursor-pointer ${m.id === selectedMeetingId ? "bg-blue-100" : ""}`}
+                              onClick={() => handleMeetingSelection(m.id)}
+                          >
+                            <div className="w-full">
+                              <div className="text-sm 2xl:text-base font-medium flex flex-col max-h-min xl:flex-row  gap-1 text-left xl:gap-2">
+                                <span className="mr-2 truncate w-full xl:w-[40%] block">{m.token}</span>
+                                <span className="mr-2 text-left truncate w-full xl:w-[55%] block">{m.title}</span>
+                              </div>
+                              <div className="text-xs 2xl:text-sm text-gray-600 flex flex-col xl:flex-row justify-between gap-1 xl:gap-2 mt-1">
+                                <span className="order-1 sm:order-1">{formatDate(m.date)}, {formatTime(new Date(m.date))}</span>
+                                <span className="order-2 sm:order-2">{formatDuration(m.duration)}</span>
+                                <span className="order-3 sm:order-3 text-custom-teal font-semibold">{m.cost.toFixed(2)} zł</span>
+                              </div>
+                            </div>
+                          </li>
+                          <hr className="gray-line mx-2" />
+                        </React.Fragment>
+                    ))}
+                    {isLoading && (
+                        <div className="flex justify-center py-4">
+                          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500"></div>
+                        </div>
+                    )}
+                    {!hasMore && !isLoading && (
+                        <div className="text-center py-4 text-gray-500">
+                          To już wszystkie spotkania
+                        </div>
+                    )}
+                    {error && (
+                        <div className="text-center py-4 text-gray-500">
+                          Błąd ładowania, spróbuj później!
+                        </div>
+                    )}
+                  </ul>
+                </div>
+              </div>
+            </div>
+
+            {selectedMeeting ? (
+                <MeetingDetails
+                    meeting={selectedMeeting}
+                    onNewCost={handleNewCost}
+                    onEditCost={handleEditCost}
+                    onDeleteCost={handleDeleteCost}
+                    refreshMeeting={() => refreshCurrentRange()}
+                />
+            ): (
+                <div className="col-span-3 m-4 ml-0 w-full white-shadow-bordered-div flex items-center justify-center  h-[calc(100vh-200px)]">
+                  <p className="text-gray-500">Brak spotkań do wyświetlenia</p>
+                </div>
+            )}
           </div>
         </div>
 
-        {/* Details of selected meeting */}
-        {selectedMeeting ? (
-            <MeetingDetails
-                meeting={selectedMeeting}
-                onNewCost={handleNewCost}
-                onEditCost={handleEditCost}
-                onDeleteCost={handleDeleteCost}
-                refreshMeeting = {() => refreshCurrentRange()}
-          />
 
-        ): (
-            <div className="col-span-3 white-shadow-bordered-div flex items-center justify-center">
-              <p className="text-gray-500">Brak spotkań do wyświetlenia</p>
-            </div>
-        )}
-      </div>
-    </div>
   );
 };

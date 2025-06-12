@@ -1,7 +1,15 @@
 import "../style.css";
 import Slider from "rc-slider";
 import "rc-slider/assets/index.css";
-import { faAngleDown, faEye, faEyeSlash, faPenToSquare, faSignOutAlt, faTrashCan } from "@fortawesome/free-solid-svg-icons";
+import {
+  faAngleDown,
+  faCalendar,
+  faEye,
+  faEyeSlash,
+  faPenToSquare,
+  faSignOutAlt,
+  faTrashCan
+} from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import logo from '../assets/logo.png'
 import person from '../assets/person.png'
@@ -10,9 +18,10 @@ import key from '../assets/key.png'
 import eye from '../assets/eye.png'
 import { getInitials, useUserAdminState } from "../components/userAdminHelpers";
 import MobileAdminPanel from "../components/mobileAdmin.tsx";
-
+import React from "react";
 export default function AdminPanel() {
   const state = useUserAdminState();
+
 
   return (
     (state.isMobile)?(
@@ -21,12 +30,12 @@ export default function AdminPanel() {
     <div className="w-[100vw] h-[100vh] overflow-hidden">
       <div className="bg-[#f6f6f6] min-h-screen min-w-screen text-gray-900 overflow-hidden">
         {/* Sidebar */}
-        <aside className="w-1/6 min-h-screen bg-white float-left rounded-r-2xl shadow p-4 border border-gray-200 flex flex-col gap-3">
-          <h2 className="text-lg font-semibold text-center mb-4">WYSZUKAJ UŻYTKOWNIKÓW</h2>
+        <aside className="w-1/6 min-h-screen bg-white float-left rounded-r-xs shadow p-4 border border-gray-200 flex flex-col gap-3">
+          <h2 className="font-bold text-center text-[1.5em] text-blue-900">WYSZUKAJ UŻYTKOWNIKÓW</h2>
           <input
             type="text"
             placeholder="Wpisz Imię i Nazwisko"
-            className="w-full p-2 mb-4 border rounded"
+            className="w-full p-2 mb-4 border border-gray-300 rounded-lg"
             value={state.searchName}
             onChange={e => state.setSearchName(e.target.value)}
           />
@@ -53,9 +62,9 @@ export default function AdminPanel() {
             />
           </div>
           <div className="mb-4">
-            <label className="block mb-1">Sortowanie</label>
+            <label className="text-xs xl:text-sm text-gray-700 mt-2">Sortowanie</label>
             <select
-              className="w-full p-2 border rounded"
+              className="text-xs xl:text-sm border border-gray-300 rounded-lg p-1 w-full"
               value={state.sortBy}
               onChange={e => state.setSortBy(e.target.value as "hourly_cost_asc" | "hourly_cost_desc")}
             >
@@ -64,9 +73,9 @@ export default function AdminPanel() {
             </select>
           </div>
           <div className="mb-4">
-            <label className="block mb-1">Rola</label>
+            <label className="text-xs xl:text-sm text-gray-700 mt-2">Rola</label>
             <select
-              className="w-full p-2 border rounded"
+              className="text-xs xl:text-sm border border-gray-300 rounded-lg p-1 w-full"
               value={state.roleFilter}
               onChange={e => state.setRoleFilter(e.target.value)}
             >
@@ -104,6 +113,16 @@ export default function AdminPanel() {
               {state.userMenuOpen && (
                 <div className="absolute bottom-full left-0 right-0 bg-blue-100 shadow-lg rounded-md p-2 mb-2 z-10">
                   <button
+                      className="w-full text-left p-2 hover:bg-gray-100 rounded flex items-center gap-2"
+                      onClick={() => {
+                        state.setUserMenuOpen(false);
+                        state.navigate("/multiple_meetings");
+                      }}
+                  >
+                    <FontAwesomeIcon icon={faCalendar} />
+                    Strona Spotkań
+                  </button>
+                  <button
                     className="w-full text-left p-2 hover:bg-gray-100 rounded flex items-center gap-2"
                     onClick={() => {
                       state.setUserMenuOpen(false);
@@ -121,7 +140,7 @@ export default function AdminPanel() {
 
         {/* Main */}
         <div className="text-center p-6">
-          <h1 className="text-6xl font-bold text-blue-main">PANEL ADMINISTRACYJNY</h1>
+          <h1 className="text-6xl font-normal text-blue-main">PANEL ADMINISTRACYJNY</h1>
           <p className="text-lg">Jesteś w: <b>{localStorage.getItem('app_role')}</b></p>
           <div
             style={{ backgroundImage: `url(${logo})` }}
@@ -132,38 +151,42 @@ export default function AdminPanel() {
         <main ref={state.mainRef} className="flex-1 px-6 pt-6 h-[80vh] overflow-auto">
           <div className="flex space-x-4 h-full">
             {/* User list */}
-            <div className="w-1/3 bg-white shadow rounded-lg overflow-y-auto h-full" ref={state.listContainerRef}>
-              <div className="p-4 border-b font-semibold sticky top-0 bg-white z-10">
-                Użytkownicy: {state.filteredUsers.length}
+            <div className="white-shadow-bordered-div col-span-1 w-[25%] h-full">
+              <div className="h-full overflow-y-auto pr-2" ref={state.listContainerRef}>
+                <ul>
+                <div className=" sticky top-0 bg-white z-10">
+                  <li className="pl-2 text-[0.9em] font-bold text-blue-main mb-2">Użytkownicy: {state.filteredUsers.length}</li>
+                  <hr className="gray-line mx-2" />
+                </div>
+
+                  {state.sortedUsers.map((user, idx) => (
+                    <li
+                      key={user.id || idx}
+                      onClick={() => state.setSelectedUser(user)}
+                      className={`p-4 border-b border-gray-300 cursor-pointer hover:bg-blue-100 ${
+                        state.selectedUser && state.selectedUser.id === user.id ? "bg-blue-50" : ""
+                      }`}
+                    >
+                      <div className="flex items-center space-x-3">
+                        <div className="bg-gray-800 text-white rounded-full h-10 w-10 aspect-square flex items-center justify-center font-semibold">
+                          {getInitials(user.username)}
+                        </div>
+                        <div>
+                          <div className="font-medium">{user.username}</div>
+                          <div className="text-sm text-gray-500">{user.role_name}</div>
+                        </div>
+                      </div>
+                    </li>
+                  ))}
+                </ul>
               </div>
-              <ul>
-                {state.sortedUsers.map((user, idx) => (
-                  <li
-                    key={user.id || idx}
-                    onClick={() => state.setSelectedUser(user)}
-                    className={`p-4 border-b cursor-pointer hover:bg-blue-100 ${
-                      state.selectedUser && state.selectedUser.id === user.id ? "bg-blue-50" : ""
-                    }`}
-                  >
-                    <div className="flex items-center space-x-3">
-                      <div className="bg-gray-800 text-white rounded-full w-8 h-8 flex items-center justify-center font-semibold">
-                        {getInitials(user.username)}
-                      </div>
-                      <div>
-                        <div className="font-medium">{user.username}</div>
-                        <div className="text-sm text-gray-500">{user.role_name}</div>
-                      </div>
-                    </div>
-                  </li>
-                ))}
-              </ul>
             </div>
 
             {/* User details */}
             <div className="flex-1 space-y-6">
               <div className="bg-white px-6 py-2 rounded-lg shadow">
                 <div className="flex w-full justify-between items-center">
-                  <h2 className="font-semibold text-blue-800"> Użytkownik</h2>
+                  <h2 className="font-semibold text-lg text-blue-800"> Użytkownik</h2>
                   <div>
                     <FontAwesomeIcon
                       icon={faPenToSquare}
@@ -194,7 +217,7 @@ export default function AdminPanel() {
                 </div>
                 <hr className="gray-line md-2" />
                 <div className="flex items-center space-x-4">
-                  <div className="bg-gray-800 text-white rounded-full w-18 h-18 flex items-center justify-center text-[2em] font-bold">
+                  <div className="bg-gray-800 my-4 text-white rounded-full w-12 h-12 flex items-center justify-center text-lg font-bold">
                     {state.selectedUser ? getInitials(state.selectedUser.username) : ""}
                   </div>
                   <div>
@@ -235,7 +258,7 @@ export default function AdminPanel() {
                       type="text"
                       name="username"
                       placeholder="Imię i Nazwisko"
-                      className="p-2 border rounded w-full"
+                      className="p-2 border border-gray-300 rounded w-full"
                       value={state.newUser.username}
                       onChange={state.handleNewUserChange}
                       required
@@ -248,7 +271,7 @@ export default function AdminPanel() {
                       type="email"
                       name="email"
                       placeholder="Funkcja Niedostępna"
-                      className="p-2 border rounded w-full"
+                      className="p-2 border border-gray-300 rounded w-full"
                       disabled
                     />
                   </div>
@@ -267,7 +290,7 @@ export default function AdminPanel() {
                       type={state.passwordVisible?"password":"text"}
                       name="password"
                       placeholder={!state.isEditMode ? "Hasło" : "Takie jak wcześniej"}
-                      className="p-2 border rounded w-full"
+                      className="p-2 border border-gray-300 rounded w-full"
                       value={state.newUser.password}
                       onChange={state.handleNewUserChange}
                       required={!state.isEditMode}
@@ -279,7 +302,7 @@ export default function AdminPanel() {
                       type="number"
                       name="hourly_cost"
                       placeholder="Wypłata"
-                      className="p-2 border rounded w-full"
+                      className="p-2 border border-gray-300 rounded w-full"
                       value={state.newUser.hourly_cost}
                       onChange={state.handleNewUserChange}
                       required
@@ -293,7 +316,7 @@ export default function AdminPanel() {
                       type="text"
                       name="role_name"
                       placeholder="Wpisz nazwę roli"
-                      className="p-2 border rounded w-full"
+                      className="p-2 border border-gray-300 rounded w-full"
                       value={state.newUser.role_name}
                       onChange={state.handleNewUserChange}
                       required
@@ -304,7 +327,7 @@ export default function AdminPanel() {
                     <p className="p-0 md-0">Uprawnienia</p>
                     <select
                       name="app_role"
-                      className="p-[0.6em] border rounded w-full"
+                      className="p-[0.6em] border border-gray-300 rounded w-full"
                       value={state.newUser.app_role}
                       onChange={state.handleNewUserChange}
                       required
