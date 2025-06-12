@@ -69,12 +69,18 @@ def process_events(events):
 
 def save_single_event(event):
     hangout_link = event.get("hangoutLink")
-    name = event.get("summary", "")
+    if not hangout_link:
+        return False
+
+    # Standaryzuj format linku do spotkania
+    meet_token = hangout_link.replace("https://meet.google.com/", "").strip()
+    
+    name = event.get("summary", "").strip()
     start_str = event["start"].get("dateTime", event["start"].get("date"))
     end_str = event["end"].get("dateTime", event["end"].get("date"))
-    participants = [att["email"] for att in event.get("attendees", []) if "email" in att]
-    room = event.get("location", "")
-    description = event.get("description", "")
+    participants = [att["email"].lower().strip() for att in event.get("attendees", []) if "email" in att]
+    room = event.get("location", "").strip()
+    description = event.get("description", "").strip()
 
     try:
         start = datetime.datetime.fromisoformat(start_str.replace("Z", "+00:00"))
@@ -84,15 +90,27 @@ def save_single_event(event):
         print(f"Parse error, event '{name}': {e}")
         return False
 
-    if Meeting.query.filter_by(token=hangout_link, name=name, start_datetime=start).first():
+    organizer_email = event.get("organizer", {}).get("email", "").strip()
+    if not organizer_email:
+        print(f"Missing organizer email for event: {name}")
+        return False
+
+    owner = User.query.filter_by(username=organizer_email).first()
+    if not owner:
+        print(f"Organizer not found in database: {organizer_email}")
+        return False
+
+    existing_meeting = Meeting.query.filter(
+        (Meeting.token == meet_token) &
+        (Meeting.start_datetime == start)
+    ).first()
+
+    if existing_meeting:
+        print(f"Meeting already exists: {name} ({meet_token}) at {start}")
         return False
 
     meeting_users = get_or_create_users(participants)
-    
-    organizer_email = event.get("organizer", {}).get("email"),
-    owner = User.query.filter_by(username=organizer_email).first()
-    owner_id = owner.id
-
+    meeting_users.append(owner)
 
     meeting = Meeting(
         name=name,
@@ -100,20 +118,24 @@ def save_single_event(event):
         duration=(end - start).seconds // 60,
         room_name=room,
         cost=0.0,
-        token=hangout_link.remove("https://meet.google.com/"),
+        token=meet_token,
         created_at=created_at,
         description=description,
-        owner_id=owner_id,
+        owner_id=owner.id,
     )
 
     for user in meeting_users:
         meeting.users.append(user)
 
-    db.session.add(meeting)
-    db.session.commit()
-    print(f'+ "{name}"')
-    return True
-
+    try:
+        db.session.add(meeting)
+        db.session.commit()
+        print(f'+ Added meeting: "{name}" ({meet_token}) at {start}')
+        return True
+    except Exception as e:
+        db.session.rollback()
+        print(f"Error saving meeting {name}: {str(e)}")
+        return False
 
 
 def get_or_create_users(participants_emails):

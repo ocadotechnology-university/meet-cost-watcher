@@ -5,7 +5,7 @@ from datetime import datetime
 class Meeting(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(128), nullable=False)
-    token = db.Column(db.String(128), nullable=False)
+    token = db.Column(db.String(128), nullable=True, unique=False)
     start_datetime = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
     duration = db.Column(db.Integer, nullable=False)  # Duration in minutes
     room_name = db.Column(db.String(64))

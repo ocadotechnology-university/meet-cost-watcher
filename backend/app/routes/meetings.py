@@ -188,11 +188,9 @@ class MeetingsSingle(Resource):
 
 @api.route("/sync")
 class MeetingSync(Resource):
-    @api.doc(security="basicAuth")
     @api.response(200, "Success")
     @api.response(400, "Invalid request")
     @api.response(401, "Unauthorized")
-    @auth.login_required
     def post(self):
         """Sync meetings with Google Calendar"""
         user = auth.current_user()
