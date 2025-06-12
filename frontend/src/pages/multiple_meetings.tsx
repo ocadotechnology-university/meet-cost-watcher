@@ -460,7 +460,7 @@ export default function MultipleMeetingsPage(){
           <hr className="border-gray-300" />
 
           <div className="flex h-[calc(100vh-180px)] overflow-hidden ">
-            <div className="h-[calc(100%-20px)] flex flex-col m-4">
+            <div className="h-[calc(100%-20px)] min-w-[25%] flex flex-col m-4">
               <div className="white-shadow-bordered-div col-span-1 h-full">
                 <div ref={listContainerRef} className="h-full overflow-y-auto pr-2">
                   <ul>
@@ -518,7 +518,7 @@ export default function MultipleMeetingsPage(){
                     refreshMeeting={() => refreshCurrentRange()}
                 />
             ): (
-                <div className="col-span-3 white-shadow-bordered-div flex items-center justify-center">
+                <div className="col-span-3 m-4 ml-0 w-full white-shadow-bordered-div flex items-center justify-center  h-[calc(100vh-200px)]">
                   <p className="text-gray-500">Brak spotkań do wyświetlenia</p>
                 </div>
             )}
