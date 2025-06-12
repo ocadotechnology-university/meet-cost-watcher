@@ -15,7 +15,6 @@ import person from '../assets/person.png';
 import dolar from '../assets/dolar.png';
 import key from '../assets/key.png';
 import { getInitials, useUserAdminState } from "./userAdminHelpers.ts";
-import {useNavigate} from "react-router-dom";
 
 export default function MobileAdminPanel() {
   const state = useUserAdminState();
@@ -432,7 +431,6 @@ export default function MobileAdminPanel() {
 }
 
 function topMenu(state: ReturnType<typeof useUserAdminState>) {
-    const navigate = useNavigate();
     return(
         <div className="sticky top-0 bg-white">
             <div className="flex justify-between items-center p-4 ">
@@ -475,7 +473,7 @@ function topMenu(state: ReturnType<typeof useUserAdminState>) {
                                     className="w-full text-left px-4 py-2 text-sm hover:bg-gray-100 flex items-center gap-2"
                                     onClick={() => {
                                         state.setUserMenuOpen(false);
-                                        navigate("/multiple_meetings")
+                                        state.navigate("/multiple_meetings")
                                     }}
                                 >
                                     <FontAwesomeIcon icon={faCalendar} />

@@ -18,11 +18,10 @@ import key from '../assets/key.png'
 import eye from '../assets/eye.png'
 import { getInitials, useUserAdminState } from "../components/userAdminHelpers";
 import MobileAdminPanel from "../components/mobileAdmin.tsx";
-import {useNavigate} from "react-router-dom";
 import React from "react";
 export default function AdminPanel() {
   const state = useUserAdminState();
-  const navigate = useNavigate();
+
 
   return (
     (state.isMobile)?(
@@ -117,7 +116,7 @@ export default function AdminPanel() {
                       className="w-full text-left p-2 hover:bg-gray-100 rounded flex items-center gap-2"
                       onClick={() => {
                         state.setUserMenuOpen(false);
-                        navigate("/multiple_meetings");
+                        state.navigate("/multiple_meetings");
                       }}
                   >
                     <FontAwesomeIcon icon={faCalendar} />
