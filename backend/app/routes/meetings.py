@@ -184,6 +184,7 @@ class MeetingsSingle(Resource):
         except Exception:
             abort(404)
 
+
 @api.route("/sync")
 class MeetingSync(Resource):
     @api.response(200, "Success")
@@ -193,7 +194,7 @@ class MeetingSync(Resource):
         """Sync meetings with Google Calendar"""
         user = auth.current_user()
         data = request.get_json()
-        
+
         try:
             filters = MeetingsFilterParser(**data) if data else None
             sync_result = save_meetings_from_calendar()

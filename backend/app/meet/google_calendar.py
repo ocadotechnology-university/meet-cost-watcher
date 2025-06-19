@@ -36,9 +36,7 @@ def authorize():
             creds.refresh(Request())
         else:
             # flow = InstalledAppFlow.from_client_secrets_file(credentails_path, SCOPES)
-            flow = InstalledAppFlow.from_client_config(
-                credentials_json,
-                SCOPES)
+            flow = InstalledAppFlow.from_client_config(credentials_json, SCOPES)
             creds = flow.run_local_server(port=8080)
             print(creds)
 
@@ -50,18 +48,15 @@ def authorize():
     return creds
 
 
-
 def calculate_meeting_cost(participiants, duration) -> float:
     total_cost = 0.0
-    
+
     for participant in participiants:
         hours = duration / 60
         participant_cost = hours * participant.hourly_cost
         total_cost += participant_cost
-    
+
     return round(total_cost, 2)
-
-
 
 
 def process_events(events):
@@ -73,8 +68,6 @@ def process_events(events):
     return new_meeting_count
 
 
-
-
 def save_single_event(event):
     hangout_link = event.get("hangoutLink")
     if not hangout_link:
@@ -82,18 +75,26 @@ def save_single_event(event):
 
     # Standaryzuj format linku do spotkania
     meet_token = hangout_link.replace("https://meet.google.com/", "").strip()
-    
+
     name = event.get("summary", "").strip()
     start_str = event["start"].get("dateTime", event["start"].get("date"))
     end_str = event["end"].get("dateTime", event["end"].get("date"))
-    participants = [att["email"].lower().strip() for att in event.get("attendees", []) if "email" in att]
+    participants = [
+        att["email"].lower().strip()
+        for att in event.get("attendees", [])
+        if "email" in att
+    ]
     room = event.get("location", "").strip()
     description = event.get("description", "").strip()
 
     try:
         start = datetime.datetime.fromisoformat(start_str.replace("Z", "+00:00"))
         end = datetime.datetime.fromisoformat(end_str.replace("Z", "+00:00"))
-        created_at = datetime.datetime.fromisoformat(event.get("created").replace("Z", "+00:00")) if event.get("created") else datetime.datetime.utcnow()
+        created_at = (
+            datetime.datetime.fromisoformat(event.get("created").replace("Z", "+00:00"))
+            if event.get("created")
+            else datetime.datetime.utcnow()
+        )
     except Exception as e:
         print(f"Parse error, event '{name}': {e}")
         return False
@@ -109,8 +110,7 @@ def save_single_event(event):
         return False
 
     existing_meeting = Meeting.query.filter(
-        (Meeting.token == meet_token) &
-        (Meeting.start_datetime == start)
+        (Meeting.token == meet_token) & (Meeting.start_datetime == start)
     ).first()
 
     if existing_meeting:
@@ -168,7 +168,6 @@ def get_or_create_users(participants_emails):
     return users
 
 
-
 def save_meetings_from_calendar():
     creds = authorize()
     service = build("calendar", "v3", credentials=creds)
@@ -190,7 +189,7 @@ def save_meetings_from_calendar():
         return
 
     print(f"Get {len(events)} events from Google Calendar. Uploading to database...\n")
-    
+
     try:
         db.session.execute(meeting_users.delete())
         db.session.query(Meeting).delete()
@@ -200,4 +199,6 @@ def save_meetings_from_calendar():
 
     db.session.commit()
     new_num = process_events(events)
-    print(f"Added {new_num} meetings. {len(events) - new_num} already exist in the database.\n")
+    print(
+        f"Added {new_num} meetings. {len(events) - new_num} already exist in the database.\n"
+    )
