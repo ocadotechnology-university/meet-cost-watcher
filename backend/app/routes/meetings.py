@@ -4,6 +4,7 @@ from flask import request
 from app.types import MeetingsFilters as MeetingsFilterParser
 from flask import abort
 from app.auth import auth
+from app.meet.google_calendar import save_meetings_from_calendar
 from .common import build_return_type
 
 api = Namespace("meetings", description="meeting operations")
@@ -182,3 +183,22 @@ class MeetingsSingle(Resource):
             return meetings_single_resolver(token=token)
         except Exception:
             abort(404)
+
+
+@api.route("/sync")
+class MeetingSync(Resource):
+    @api.response(200, "Success")
+    @api.response(400, "Invalid request")
+    @api.response(401, "Unauthorized")
+    def post(self):
+        """Sync meetings with Google Calendar"""
+        user = auth.current_user()
+        data = request.get_json()
+
+        try:
+            filters = MeetingsFilterParser(**data) if data else None
+            sync_result = save_meetings_from_calendar()
+            return meetings_all_resolver(filters=filters, user=user)
+        except Exception as e:
+            print(f"Sync error: {str(e)}")
+            abort(400, description=str(e))

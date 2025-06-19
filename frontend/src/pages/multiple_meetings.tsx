@@ -71,59 +71,74 @@ export default function MultipleMeetingsPage(){
 // eslint-disable-next-line react-hooks/exhaustive-deps
   },[searchVersion]);
 
-  const fetchMeetings = async (pageNum: number = 1, reset = false) => {
-    console.log(`Fetching meetings (page: ${pageNum}, reset: ${reset})`);
-    if(isLoading || (!hasMore && !reset)) return;
+const fetchMeetings = async (pageNum: number = 1, reset = false) => {
+  console.log(`Fetching meetings (page: ${pageNum}, reset: ${reset})`);
+  if(isLoading || (!hasMore && !reset)) return;
 
-    setIsLoading(true);
+  setIsLoading(true);
+  if (reset) {
+    setInitialLoading(true);
+  }
+  setError(null);
+  try{
+    const credentials = btoa(`meetcostwatcher@gmail.com:123`);
+    
+    // Najpierw wykonaj synchronizację
+    const syncResponse = await fetch(backendURL+"/meetings/sync", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": `Basic ${credentials}`
+      },
+      body: JSON.stringify({
+        ...currentRequest,
+        page: pageNum,
+        per_page: perPage
+      })
+    });
+
+    if(!syncResponse.ok) {
+      throw new Error('Synchronization failed');
+    }
+
+    // Następnie pobierz zsynchronizowane spotkania
+    const meetingsResponse = await fetch(backendURL+"/meetings/all", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": `Basic ${credentials}`
+      },
+      body: JSON.stringify({
+        ...currentRequest,
+        page: pageNum,
+        per_page: perPage
+      })
+    });
+
+    if(meetingsResponse.ok) {
+      const data: MeetingResponse = await meetingsResponse.json();
+      setMeetingsCost(data.value.total_cost);
+      const newMeetings = data.value.meetings;
+      setMeetingsList(prevState => reset ? newMeetings : [...prevState, ...newMeetings]);
+
+      if(newMeetings.length < perPage) {
+        setHasMore(false);
+      }
+      setPage(pageNum);
+    } else {
+      console.error('Error fetching meetings');
+    }
+
+  } catch (error) {
+    setError('Failed to fetch! ');
+    console.error("Error to fetch: ", error);
+  } finally {
+    setIsLoading(false);
     if (reset) {
-      setInitialLoading(true);
+      setInitialLoading(false);
     }
-    setError(null);
-    try{
-      const credentials = localStorage.getItem('credentials');
-
-      const response = await fetch(backendURL+"/meetings/all", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "Authorization": `Basic ${credentials}`
-        },
-
-        body: JSON.stringify({
-          ...currentRequest,
-          page: pageNum,
-          per_page:perPage
-        })
-      });
-
-      if(response.ok) {
-        const data: MeetingResponse = await response.json();
-        setMeetingsCost(data.value.total_cost);
-        const newMeetings = data.value.meetings;
-        setMeetingsList(prevState => reset ? newMeetings : [...prevState, ...newMeetings]);
-
-        if(newMeetings.length<perPage)
-        {
-          setHasMore(false);
-        }
-        setPage(pageNum);
-      } else {
-        console.error('Błąd pobierania spotkań');
-      }
-
-    } catch (error) {
-      setError('Failed to fetch! ');
-      console.error("Error to fetch: ", error);
-    } finally {
-      setIsLoading(false);
-      if (reset) {
-        setInitialLoading(false);
-      }
-
-    }
-  };
-
+  }
+};
 
 
   useContainerScroll(listContainerRef  as RefObject<HTMLElement>,() => {
@@ -375,10 +390,10 @@ export default function MultipleMeetingsPage(){
                                   onClick={() => handleMeetingSelection(m.id)}
                               >
                                 <div className="flex justify-between">
-                                  <span className="font-medium text-sm truncate max-w-[75%]" >{m.title}</span>
+                                  <span className="font-medium text-sm">{m.token}</span>
                                   <span className="text-custom-teal font-semibold text-sm">{m.cost.toFixed(2)} zł</span>
                                 </div>
-                                <div className="text-xs text-gray-600">{m.token}</div>
+                                <div className="text-xs text-gray-600">{m.title}</div>
                                 <div className="flex justify-between text-xs text-gray-600 mt-1">
                                   <span>{formatDate(m.date)}, {formatTime(new Date(m.date))}</span>
                                   <span>{formatDuration(m.duration)}</span>
@@ -475,9 +490,9 @@ export default function MultipleMeetingsPage(){
                               onClick={() => handleMeetingSelection(m.id)}
                           >
                             <div className="w-full">
-                              <div className="text-sm 2xl:text-base font-medium flex flex-col max-h-min xl:flex-row  gap-1 text-left xl:gap-2">
-                                <span className="mr-2 truncate w-full xl:w-[40%] block">{m.token}</span>
-                                <span className="mr-2 text-left truncate w-full xl:w-[55%] block">{m.title}</span>
+                              <div className="text-sm 2xl:text-base font-medium flex flex-col max-h-min xl:flex-row justify-between gap-1 xl:gap-2">
+                                <span className="mr-2 truncate max-w-[150px] block">{m.token}</span>
+                                <span className="mr-2 truncate max-w-[150px] block">{m.title}</span>
                               </div>
                               <div className="text-xs 2xl:text-sm text-gray-600 flex flex-col xl:flex-row justify-between gap-1 xl:gap-2 mt-1">
                                 <span className="order-1 sm:order-1">{formatDate(m.date)}, {formatTime(new Date(m.date))}</span>
