@@ -14,7 +14,7 @@ const LoginPage: React.FC = () => {
   const [passwordVisible, setPasswordVisible] = useState(false);
   const [loginError, setLoginError] = useState(false);
   const { login, setLogin, password, setPassword } = useContext(LoginContext);
-  const [isGoogleLoading, setIsGoogleLoading] = useState(false);
+  const [, setIsGoogleLoading] = useState(false);
 
   const navigate = useNavigate();
 
@@ -47,22 +47,22 @@ const LoginPage: React.FC = () => {
         localStorage.setItem("credentials", credentials);
         localStorage.setItem("username", login);
 
-        const users = await fetch(backendURL+"/users/", {
-        method: "GET",
-        headers: {
-          "Content-Type": "application/json",
-          "Authorization": `Basic ${credentials}`, 
-          }
+        const users = await fetch(backendURL + "/users/", {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Basic ${credentials}`,
+          },
         });
-        if(response.ok) {
+        if (response.ok) {
           const res = await users.json();
           const usersData = res.value || [];
           type User = { username: string; app_role?: string };
           const found = usersData.find((u: User) => u.username === login);
           const app_role = found ? found.app_role : "employee";
-          localStorage.setItem('app_role', app_role);
+          localStorage.setItem("app_role", app_role);
         } else {
-          localStorage.setItem('app_role', "employee");
+          localStorage.setItem("app_role", "employee");
         }
         navigate("/multiple_meetings");
       }
@@ -74,12 +74,11 @@ const LoginPage: React.FC = () => {
 
   const handleGoogleLogin = async () => {
     try {
+      await signInWithGoogle();
 
-      const idToken = await signInWithGoogle();
-      
       setLogin("meetcostwatcher@gmail.com");
       setPassword("123");
-      
+
       setIsGoogleLoading(true);
 
       const credentials = btoa(`${login}:${password}`);
@@ -88,13 +87,12 @@ const LoginPage: React.FC = () => {
         per_page: 1,
         page: 1,
       };
-      
+
       const response = await fetch(backendURL + "/meetings/sync", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          "Authorization": `Basic ${credentials}`, 
-
+          Authorization: `Basic ${credentials}`,
         },
         body: JSON.stringify(bodyData),
       });
@@ -102,8 +100,8 @@ const LoginPage: React.FC = () => {
       if (response.status === 401) {
         setLoginError(true);
       } else if (response.status === 200) {
-        const data = await response.json();
-        
+        await response.json();
+
         // TODO: localStorage.set
         navigate("/multiple_meetings");
       }
@@ -193,7 +191,7 @@ const LoginPage: React.FC = () => {
         </form>
 
         <button
-          className="bg-white mt-4 px-8 py-2 border border-color-blue-main rounded-full font-bold tracking-wide cursor-pointer transition-colors hover:bg-[linear-gradient(to_right,_#EA4335_0%_25%,_#FBBC05_25%_50%,_#34A853_50%_75%,_#4285F4_75%_100%)] hover:opacity-90" 
+          className="bg-white mt-4 px-8 py-2 border border-color-blue-main rounded-full font-bold tracking-wide cursor-pointer transition-colors hover:bg-[linear-gradient(to_right,_#EA4335_0%_25%,_#FBBC05_25%_50%,_#34A853_50%_75%,_#4285F4_75%_100%)] hover:opacity-90"
           onClick={handleGoogleLogin}
         >
           LOGIN via Google
