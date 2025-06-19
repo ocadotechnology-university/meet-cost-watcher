@@ -1,4 +1,6 @@
 export const formatDuration = (minutes: number) => {
+    // @review use Intl.NumberFormat
+
     const hours = Math.floor(minutes / 60);
     const mins = minutes % 60;
     return `${hours > 0 ? `${hours}h ` : ''}${mins}min`;
@@ -6,15 +8,14 @@ export const formatDuration = (minutes: number) => {
 
 
 export const formatDate = (dateString: string) => {
-    const options: Intl.DateTimeFormatOptions = {
+    return new Date(dateString).toLocaleString('pl-PL', {
         day: '2-digit',
         month: '2-digit',
         year: 'numeric'
-    };
-    return new Date(dateString).toLocaleString('pl-PL', options);
+    });
 };
 
-export const  formatTime = (date: Date) => {
+export const formatTime = (date: Date) => {
     return date.toLocaleTimeString('pl-PL', {
         hour: '2-digit',
         minute: '2-digit',

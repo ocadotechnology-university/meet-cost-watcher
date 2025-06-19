@@ -1,5 +1,5 @@
-import {AdditionalCost, Meeting} from "../types/responseTypes.ts";
-import dolar from "../assets/dolar.png";
+import type {AdditionalCost, Meeting} from "../../types/responseTypes";
+import dollarImageSrc from "../assets/dolar.png";
 import people from "../assets/people.png";
 import clock from "../assets/clock.png";
 import info from "../assets/info.png";
@@ -12,12 +12,13 @@ import {
     faPlusCircle,
 } from "@fortawesome/free-solid-svg-icons";
 
-import React, {useState} from "react";
-import {formatDate, getTimeRange} from "../utils/formatFunctions.ts";
-import {EditCostModal} from "./AdditionalCostsModal.tsx";
+import {useState} from "react";
+import {formatDate, getTimeRange} from "../../utils/formatFunctions";
+import {EditCostModal} from "../AdditionalCostsModal";
+import { UserAvatar } from "./UserAvatar";
 
 
-type MeetingDetailsProperties = {
+type Props = {
     meeting:Meeting;
     onNewCost:(meetingId: number, name: string, cost: number) => Promise<void>;
     onEditCost:(name: string, cost: number, id?: number) => Promise<void>;
@@ -26,34 +27,53 @@ type MeetingDetailsProperties = {
     isMobile?: boolean;
 };
 
-export const MeetingDetails: React.FC<MeetingDetailsProperties> = ({ meeting, onNewCost,onEditCost,onDeleteCost,refreshMeeting,isMobile = false }) => {
+type Section = "costs" | "participants" | "details";
+
+export const MeetingDetails = ({ meeting, onNewCost,onEditCost,onDeleteCost,refreshMeeting,isMobile = false }: Props) => {
     const [editingCost, setEditingCost] = useState<AdditionalCost | null>(null);
     const [isAddModalOpen, setIsAddModalOpen] = useState(false);
-    const [activeSection, setActiveSection] = useState<"costs" | "participants" | "details">("details");
+    const [activeSection, setActiveSection] = useState<Section>("details");
 
     const handleNewCost = async (name:string, cost:number) => {
         await onNewCost(meeting.id,name,cost);
-        await refreshMeeting();
+        refreshMeeting();
         setEditingCost(null);
         setIsAddModalOpen(false);
     }
 
     const handleEditCost = async (name:string, cost:number ,id?: number) => {
             await onEditCost(name,cost,id);
-            await refreshMeeting();
+            refreshMeeting();
             setEditingCost(null);
             setIsAddModalOpen(false);
     };
 
     const handleDeleteCost = async (costId: number) => {
             await onDeleteCost(costId);
-            await refreshMeeting();
+            refreshMeeting();
             setEditingCost(null);
             setIsAddModalOpen(false);
     };
 
+    // @review map backend response in one place  to use camel case everywhere
     const owner = meeting.participants.find(p => p.is_owner);
+    // @review remove it or assign real value
     const canEdit = true;
+
+    const renderAdditionalCosts = () => {
+      const additionalCosts = meeting.additional_costs.map((cost) => (
+        <li key={cost.id} className="flex justify-between items-center">
+          <span>{cost.name}</span>
+          <div className="flex items-center">
+            <span className="text-custom-teal mr-2">{cost.cost.toFixed(2)} zł</span>
+            <button onClick={() => setEditingCost(cost)} className="text-gray-500">
+              <FontAwesomeIcon icon={faEllipsisV} />
+            </button>
+          </div>
+        </li>
+      ));
+      return <>{additionalCosts}</>;
+    }
 
     if (isMobile) {
         return (
@@ -81,7 +101,7 @@ export const MeetingDetails: React.FC<MeetingDetailsProperties> = ({ meeting, on
                         onClick={() => setActiveSection("costs")}
                         className={`bg-white flex flex-col p-2 rounded-lg shadow text-center ${activeSection === "costs" ? "ring-2 ring-blue-400" : ""}`}
                     >
-                        <img src={dolar} alt="Dolar" className="icon-positioning" />
+                        <img src={dollarImageSrc} alt="Dollar" className="icon-positioning" />
                         <p className="text-lg mt-5  font-bold text-custom-teal">{meeting.cost.toFixed(2)} zł</p>
                     </button>
 
@@ -105,19 +125,7 @@ export const MeetingDetails: React.FC<MeetingDetailsProperties> = ({ meeting, on
                         </div>
                         <hr className="gray-line mb-2" />
                         <ul className="space-y-3">
-                            {meeting.additional_costs.length > 0 ? (
-                                meeting.additional_costs.map((cost) => (
-                                    <li key={cost.id} className="flex justify-between items-center">
-                                        <span>{cost.name}</span>
-                                        <div className="flex items-center">
-                                            <span className="text-custom-teal mr-2">{cost.cost.toFixed(2)} zł</span>
-                                            <button onClick={() => setEditingCost(cost)} className="text-gray-500">
-                                                <FontAwesomeIcon icon={faEllipsisV} />
-                                            </button>
-                                        </div>
-                                    </li>
-                                ))
-                            ) : (
+                            {meeting.additional_costs.length > 0 ? renderAdditionalCosts() : (
                                 <li className="text-center text-gray-500 py-2">Brak dodatkowych kosztów</li>
                             )}
                         </ul>
@@ -223,7 +231,7 @@ export const MeetingDetails: React.FC<MeetingDetailsProperties> = ({ meeting, on
 
             <div className="col-span-3 grid grid-cols-3 gap-x-4 text-center h-fit">
                 <div className="white-shadow-bordered-div little-grid-box">
-                    <img src={dolar} alt="Dolar" className="icon-positioning" />
+                    <img src={dollarImageSrc} alt="Dolar" className="icon-positioning" />
                     <p className="text-lg xl:text-xl font-bold text-custom-teal">{meeting.cost.toFixed(2)} zł</p>
                     <p className="text-base xl:text-lg">Koszt</p>
                 </div>
@@ -277,7 +285,7 @@ export const MeetingDetails: React.FC<MeetingDetailsProperties> = ({ meeting, on
                             {owner && (
                                 <li className="mt-2 flex flex-row justify-between ">
                                     <div className="flex flex-col 2xl:flex-row items-left gap-2">
-                                        <div className="hidden 2xl:flex bg-gray-900 text-white h-[2em] w-[2em] aspect-square rounded-full float-left  items-center justify-center text-2xl">{owner.username.charAt(0).toUpperCase()}</div>
+                                        <UserAvatar username={owner.username} />
                                         <span><b className="text-sm 2xl:text-base">{owner.username}</b><p className="text-xs 2xl:text-sm text-gray-500">{owner.role_name}</p></span>
                                     </div>
                                     <span className="text-right text-xs 2xl:text-sm text-custom-teal">{owner.hourly_cost.toFixed(2)} zł/h</span>
@@ -288,7 +296,7 @@ export const MeetingDetails: React.FC<MeetingDetailsProperties> = ({ meeting, on
                             {meeting.participants.filter(p => !p.is_owner).map((participant) => (
                                 <li key ={participant.id} className="flex flex-row justify-between ">
                                     <div className="flex flex-col 2xl:flex-row items-left gap-2">
-                                        <div className=" hidden 2xl:flex bg-gray-900 text-white h-[2em] w-[2em] aspect-square rounded-full float-left items-center justify-center text-2xl">{participant.username.charAt(0).toUpperCase()}</div>
+                                        <UserAvatar username={participant.username} />
                                         <span><b className="text-sm 2xl:text-base">{participant.username}</b><p className="text-xs 2xl:text-sm text-gray-500">{participant.role_name}</p></span>
                                     </div>
                                     <span className="text-right text-xs 2xl:text-sm text-custom-teal">{participant.hourly_cost.toFixed(2)} zł/h</span>
@@ -351,6 +359,4 @@ export const MeetingDetails: React.FC<MeetingDetailsProperties> = ({ meeting, on
             )}
         </div>
     );
-
 };
-export default MeetingDetails;

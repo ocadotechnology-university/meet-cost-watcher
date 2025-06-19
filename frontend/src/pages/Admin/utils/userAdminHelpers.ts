@@ -1,7 +1,10 @@
 import { useState, useRef, useEffect } from "react";
-import { backendURL } from "../main.tsx";
+import { appConstants } from "../../../constants";
 import { useNavigate } from "react-router-dom";
-import type { User } from "../types/user";
+import type { User } from "../../../types/user";
+import { userValidator } from "./user-validator";
+
+// @review do not use Polish comments in code, use English instead
 
 // Funkcja pomocnicza do inicjałów
 export function getInitials(username: string) {
@@ -52,7 +55,7 @@ export function useUserAdminState() {
   const fetchUsers = async () => {
     try {
       const credentials = localStorage.getItem('credentials');
-      const response = await fetch(`${backendURL}/users/`, {
+      const response = await fetch(`${appConstants.backendURL}/users/`, {
         method: "GET",
         headers: {
           "Content-Type": "application/json",
@@ -133,6 +136,7 @@ export function useUserAdminState() {
   }, []);
 
   function onLogout() {
+    // @review do not store password in localStorage
     localStorage.removeItem('credentials');
     localStorage.removeItem('username');
     navigate("/");
@@ -141,11 +145,9 @@ export function useUserAdminState() {
   const handleNewUserChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
     const utf8Pattern = /^[\u0020-\uFFFF]*$/;
-    if (
-      (name === "username" || name === "role_name") &&
-      !utf8Pattern.test(value)
-    ) {
-      return; // ignoruj niedozwolone znaki
+    const isFieldCorrect = (name === "username" || name === "role_name") && !utf8Pattern.test(value);
+    if (!isFieldCorrect) {
+      return;
     }
     setNewUser(prev => ({
       ...prev,
@@ -157,21 +159,14 @@ export function useUserAdminState() {
     e.preventDefault();
     setFormError(null);
 
-    // Walidacja
-    if (
-      !newUser.username.trim() ||
-      !newUser.password.trim() ||
-      !newUser.role_name.trim() ||
-      !newUser.hourly_cost ||
-      !newUser.app_role
-    ) {
+    if (!userValidator.isNewUserValid(newUser)) {
       setFormError("Wszystkie pola są wymagane.");
       return;
     }
 
     try {
       const credentials = localStorage.getItem('credentials');
-      const response = await fetch(`${backendURL}/users/`, {
+      const response = await fetch(`${appConstants.backendURL}/users/`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -256,7 +251,7 @@ export function useUserAdminState() {
 
     try {
       const credentials = localStorage.getItem('credentials');
-      const response = await fetch(`${backendURL}/users/${editUserId}`, {
+      const response = await fetch(`${appConstants.backendURL}/users/${editUserId}`, {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",
@@ -287,7 +282,7 @@ export function useUserAdminState() {
     if (!selectedUser) return;
     try {
       const credentials = localStorage.getItem('credentials');
-      const response = await fetch(`${backendURL}/users/${selectedUser.id}`, {
+      const response = await fetch(`${appConstants.backendURL}/users/${selectedUser.id}`, {
         method: "DELETE",
         headers: {
           "Authorization": `Basic ${credentials}`

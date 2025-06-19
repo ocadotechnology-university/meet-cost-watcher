@@ -1,10 +1,9 @@
-// components/EditCostModal.tsx
 import React, { useState} from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faTimes } from '@fortawesome/free-solid-svg-icons';
-import {AdditionalCost} from "../types/responseTypes.ts";
+import {AdditionalCost} from "src/types/responseTypes";
 
-interface EditCostModalProps {
+type EditCostModalProps = {
     cost?: AdditionalCost;
     onSave: (name: string,  cost: number, id?: number) => void;
     onClose: () => void;
@@ -12,9 +11,9 @@ interface EditCostModalProps {
     canEdit: boolean;
 }
 
-export const EditCostModal = ({ cost,onSave, onClose, onDelete, canEdit }: EditCostModalProps) => {
-    const [name, setName] = useState(cost?.name || '');
-    const [amount, setAmount] = useState(cost?.cost || 0);
+export const EditCostModal = ({ cost, onSave, onClose, onDelete, canEdit }: EditCostModalProps) => {
+    const [name, setName] = useState(cost?.name ?? '');
+    const [amount, setAmount] = useState(cost?.cost ?? 0);
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();

@@ -1,8 +1,13 @@
 import React, { useState } from "react";
 import { LoginContext } from "./LoginContext";
 
-export const LoginProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+type Props = {
+  children: React.ReactNode
+}
+
+export const LoginProvider = ({ children }: Props) => {
   const [login, setLogin] = useState("");
+  // @review do not store password in state, use session or token instead
   const [password, setPassword] = useState("");
 
   return (

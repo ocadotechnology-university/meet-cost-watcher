@@ -8,14 +8,13 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import "../style.css";
 
 import "rc-slider/assets/index.css";
-import {Meeting, MeetingRequest, MeetingResponse, Participant} from "../types/responseTypes.ts";
-import {MeetingFilters} from "../components/MeetingFilters.tsx"
-import MeetingDetails from "../components/MeetingDetails.tsx";
+import {Meeting, MeetingRequest, MeetingResponse, Participant} from "../types/responseTypes";
+import {MeetingFilters} from "../components/MeetingFilters"
+import { MeetingDetails } from "../components/MeetingDetails";
 import {formatDate, formatDuration, formatTime, toISODateTime} from "../utils/formatFunctions.ts";
-import {useContainerScroll} from "../hooks/infiniteScroll.ts";
+import {useContainerScrollObserver} from "../hooks/useContainerScrollObserver";
 import { useIsMobile } from "../hooks/useIsMobile";
-
-import { backendURL } from "../main.tsx";
+import { appConstants } from "../constants";
 
 export default function MultipleMeetingsPage(){
 
@@ -83,7 +82,7 @@ export default function MultipleMeetingsPage(){
     try{
       const credentials = localStorage.getItem('credentials');
 
-      const response = await fetch(backendURL+"/meetings/all", {
+      const response = await fetch(appConstants.backendURL+"/meetings/all", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -126,7 +125,7 @@ export default function MultipleMeetingsPage(){
 
 
 
-  useContainerScroll(listContainerRef  as RefObject<HTMLElement>,() => {
+  useContainerScrollObserver(listContainerRef  as RefObject<HTMLElement>,() => {
     if(!isLoading && hasMore) {
       fetchMeetings(page+1,)
     }
@@ -137,7 +136,7 @@ export default function MultipleMeetingsPage(){
     try {
       const credentials = localStorage.getItem('credentials');
 
-      const response = await fetch(backendURL+"/costs/", {
+      const response = await fetch(appConstants.backendURL+"/costs/", {
         method: "POST",
         headers: {
           'Content-Type': 'application/json',
@@ -174,7 +173,7 @@ export default function MultipleMeetingsPage(){
       }
       const credentials = localStorage.getItem('credentials');
 
-      const response = await fetch(backendURL+"/costs/", {
+      const response = await fetch(appConstants.backendURL+"/costs/", {
         method: "PUT",
         headers: {
           'Content-Type': 'application/json',
@@ -203,7 +202,7 @@ export default function MultipleMeetingsPage(){
   const handleDeleteCost = async (costId: number) => {
     try {
       const credentials = localStorage.getItem('credentials');
-      const response = await fetch(backendURL+"/costs/", {
+      const response = await fetch(appConstants.backendURL+"/costs/", {
         method: "DELETE",
         headers: {
           "Content-Type": "application/json",

@@ -14,7 +14,8 @@ import {
 import person from '../assets/person.png';
 import dolar from '../assets/dolar.png';
 import key from '../assets/key.png';
-import { getInitials, useUserAdminState } from "./userAdminHelpers.ts";
+import { getInitials, useUserAdminState } from "../utils/userAdminHelpers";
+
 
 export default function MobileAdminPanel() {
   const state = useUserAdminState();

@@ -4,10 +4,8 @@ import { BrowserRouter as Router, Route, Routes } from "react-router-dom";
 import LoginPage from "./pages/login.tsx";
 import TokenLoginPage from "./pages/token_login.tsx";
 import MultipleMeetingsPage from "./pages/multiple_meetings.tsx";
-import AdminPage from "./pages/admin.tsx";
+import { AdminPanel } from "./pages/Admin";
 import { LoginProvider } from "./context/LoginProvider.tsx";
-
-export const backendURL = "http://127.0.0.1:5000";
 
 createRoot(document.getElementById("root")!).render(
   <StrictMode>
@@ -17,7 +15,7 @@ createRoot(document.getElementById("root")!).render(
           <Route path="/" element={<LoginPage />} />
           <Route path="/token_login" element={<TokenLoginPage />} />
           <Route path="/multiple_meetings" element={<MultipleMeetingsPage/>} />
-          <Route path="/admin_panel" element={<AdminPage/>} />
+          <Route path="/admin_panel" element={<AdminPanel/>} />
         </Routes>
       </Router>
     </LoginProvider>

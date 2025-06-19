@@ -16,12 +16,12 @@ import person from '../assets/person.png'
 import dolar from '../assets/dolar.png'
 import key from '../assets/key.png'
 import eye from '../assets/eye.png'
-import { getInitials, useUserAdminState } from "../components/userAdminHelpers";
-import MobileAdminPanel from "../components/mobileAdmin.tsx";
+import { getInitials, useUserAdminState } from "./utils/userAdminHelpers";
+import MobileAdminPanel from "./components/MobileAdmin";
 import React from "react";
-export default function AdminPanel() {
-  const state = useUserAdminState();
 
+export const AdminPanel = () => {
+  const state = useUserAdminState();
 
   return (
     (state.isMobile)?(

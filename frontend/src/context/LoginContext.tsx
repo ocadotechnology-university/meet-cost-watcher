@@ -1,6 +1,6 @@
-import React, { createContext} from "react";
+import React, { createContext } from "react";
 
-interface LoginContextProps {
+type LoginContextProps = {
   login: string;
   setLogin: React.Dispatch<React.SetStateAction<string>>;
   password: string;

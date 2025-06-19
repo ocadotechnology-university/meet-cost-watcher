@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import logo from '../assets/logo.png'
 import login_background from '../assets/login_background.jpg'
-import "../style2.css";
+import "../login-page-style.css";
 
 const TokenLoginPage: React.FC = () => {
   const [loginError, setLoginError] = useState(false);

@@ -1,6 +1,6 @@
-import {DateTimeState, Meeting, MeetingRequest, Participant} from "../types/responseTypes.ts";
+import type {DateTimeState, Meeting, MeetingRequest, Participant} from "../types/responseTypes";
 
-import { useState} from "react";
+import { useEffect, useState } from "react";
 import Slider from "rc-slider";
 import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
 import {
@@ -12,7 +12,8 @@ import {
 import "../style.css";
 import {toISODateTime} from "../utils/formatFunctions.ts";
 import {useNavigate} from "react-router-dom";
-interface MeetingFiltersProperties {
+
+interface Props {
     onSearch: (request: MeetingRequest) => void;
     onLogout: () => void;
     initialParticipants: Participant[];
@@ -20,13 +21,14 @@ interface MeetingFiltersProperties {
     isMobile?:boolean;
 }
 
-export const MeetingFilters = ({onSearch, initialParticipants, onLogout, filterRequest, isMobile = false}: MeetingFiltersProperties) => {
+export const MeetingFilters = ({onSearch, initialParticipants, onLogout, filterRequest, isMobile = false}: Props) => {
 
     const todayDate = new Date();
     const thirtyDaysAgo = new Date();
     thirtyDaysAgo.setDate(todayDate.getDate() - 30);
 
-    const defaultStartDate = thirtyDaysAgo.toISOString().split('T')[0];
+    // @review we should never do that. Use date.toLocaleString() instead
+    const defaultStartDate = thirtyDaysAgo.toISOString().split('T')[0]
     const defaultEndDate = todayDate.toISOString().split('T')[0];
     const defaultTime = todayDate.toTimeString().substring(0, 5);
     const [mobileFiltersOpen, setMobileFiltersOpen] = useState(false);
@@ -48,11 +50,14 @@ export const MeetingFilters = ({onSearch, initialParticipants, onLogout, filterR
         }
     });
 
-    const [selectedParticipants, setSelectedParticipants] = useState<Participant[]>(() =>
-        filterRequest.participant_ids
-            ? initialParticipants.filter(p => filterRequest.participant_ids?.includes(p.id))
-            : []
-    );
+    const [selectedParticipants, setSelectedParticipants] = useState<Participant[]>([]);
+
+    useEffect(() => {
+        const selectedParticipants = filterRequest.participant_ids
+          ? initialParticipants.filter(p => filterRequest.participant_ids?.includes(p.id))
+          : [];
+        setSelectedParticipants(selectedParticipants);
+    }, [filterRequest.participant_ids, initialParticipants]);
 
     const [availableParticipants, setAvailableParticipants] = useState<Participant[]>(() => {
         const selectedIds = new Set(filterRequest.participant_ids ?? []);
@@ -74,19 +79,16 @@ export const MeetingFilters = ({onSearch, initialParticipants, onLogout, filterR
         time: filterRequest.start_max?.split('T')[1] || defaultTime
     });
 
-
-    const updateParticipantsInFilter = (participants: Participant[]) => {
-        setFilterData({
-            ...filterData,
-            participant_ids: participants.length > 0 ? participants.map(p => p.id) : null
-        });
-    };
+    useEffect(() => {
+        setFilterData(prevState => ({
+            ...prevState,
+            participant_ids: selectedParticipants.length > 0 ? selectedParticipants.map(p => p.id) : null
+        }));
+    }, [setFilterData, selectedParticipants]);
 
     const addParticipant = (participant: Participant) => {
-        const newSelected = [...selectedParticipants, participant];
-        setSelectedParticipants(newSelected);
+        setSelectedParticipants((prevState) => ([...prevState, participant]));
         setAvailableParticipants(availableParticipants.filter(p => p.id !== participant.id));
-        updateParticipantsInFilter(newSelected);
     };
 
     const removeParticipant = (participantId:number) => {
@@ -96,7 +98,6 @@ export const MeetingFilters = ({onSearch, initialParticipants, onLogout, filterR
             setSelectedParticipants(newSelected);
             setAvailableParticipants([...availableParticipants, person]
                 .sort((a, b) => a.username.localeCompare(b.username)));
-            updateParticipantsInFilter(newSelected);
         }
     };
 

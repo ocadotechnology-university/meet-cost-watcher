@@ -1,10 +1,10 @@
-export interface AdditionalCost {
+export type AdditionalCost = {
     id: number;
     name: string;
     cost: number;
 }
 
-export interface Participant {
+export type Participant = {
     id: number;
     username: string;
     role_name: string;
@@ -12,17 +12,17 @@ export interface Participant {
     is_owner:boolean;
 }
 
-export interface Owner{
+export type Owner ={
     id: number;
     username: string;
 }
 
-export interface SortData {
+export type SortData = {
     field:string|null;
     order:string|null;
 }
 
-export interface MeetingRequest {
+export type MeetingRequest = {
     per_page: number;
     page: number;
     name?: string|null;
@@ -36,7 +36,7 @@ export interface MeetingRequest {
     sort_by?: SortData;
 }
 
-export interface Meeting {
+export type Meeting = {
     id: number;
     title: string;
     date: string;
@@ -50,17 +50,17 @@ export interface Meeting {
     additional_costs: AdditionalCost[];
 }
 
-export interface ResponseContent {
+export type ResponseContent = {
     meetings: Meeting[];
     total_cost: number;
 }
 
-export interface MeetingResponse {
+export type MeetingResponse = {
     code: string;
     value: ResponseContent;
 }
 
-export interface DateTimeState {
+export type DateTimeState = {
     date: string;
     time: string;
 }

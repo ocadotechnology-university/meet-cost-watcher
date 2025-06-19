@@ -5,9 +5,8 @@ import login_background from '../assets/login_background.jpg'
 import eye from '../assets/eye.png'
 import { useContext } from "react";
 import { LoginContext } from "../context/LoginContext.tsx";
-// import {MeetingResponse} from "../types/responseTypes.ts";
-import { backendURL } from "../main.tsx";
-import "../style2.css";
+import { appConstants } from "../constants";
+import "../login-page-style.css";
 
 const LoginPage: React.FC = () => {
   const [passwordVisible, setPasswordVisible] = useState(false);
@@ -26,7 +25,7 @@ const LoginPage: React.FC = () => {
         per_page: 1,
         page: 1
       }
-      const response = await fetch(backendURL+"/meetings/all", {
+      const response = await fetch(appConstants.backendURL+"/meetings/all", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -41,7 +40,7 @@ const LoginPage: React.FC = () => {
         localStorage.setItem('credentials',credentials);
         localStorage.setItem('username', login);
 
-        const users = await fetch(backendURL+"/users/", {
+        const users = await fetch(appConstants.backendURL+"/users/", {
         method: "GET",
         headers: {
           "Content-Type": "application/json",
